@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử huấn luyện - Lung Diagnosis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.css">
+</head>
+<body class="dark-mode">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">Lung Cancer Diagnosis</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/history">Lịch sử huấn luyện</a>
+                    </li>
+                    <li class="nav-item">
+                        <button id="theme-toggle" class="btn nav-link"><i class="fas fa-moon"></i></button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5 pt-5">
+        <h1 class="text-center mb-4">Lịch sử huấn luyện</h1>
+
+        <!-- History Entries -->
+        <div id="history-entries" class="history-entries">
+            {% if history %}
+            {% for entry in history %}
+            <div class="history-entry" data-id="{{ loop.index0 }}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="text-center mb-0">Phân tích lúc: <strong>{{ entry.timestamp }}</strong></h3>
+                    <button class="btn btn-danger btn-sm delete-entry" data-id="{{ loop.index0 }}">Xóa</button>
+                </div>
+                <table class="history-table mt-3">
+                    <tr>
+                        <th>Kết quả</th>
+                        <td class="{{ 'result-healthy' if 'Normal' in entry.result else 'result-disease' }}">
+                            {{ entry.result }} (Độ tin cậy: {{ '%0.2f'|format(entry.confidence) }}%)
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Mô hình</th>
+                        <td>{{ entry.model }}</td>
+                    </tr>
+                    <tr>
+                        <th>Ảnh đầu vào</th>
+                        <td>
+                            {% if entry.original_image %}
+                            <div class="image-container">
+                                <a href="{{ url_for('uploaded_file', filename=entry.original_image.split('/')[-1]) }}" class="image-popup">
+                                    <img src="{{ url_for('uploaded_file', filename=entry.original_image.split('/')[-1]) }}" alt="Ảnh đầu vào" class="history-image img-fluid" loading="lazy">
+                                </a>
+                            </div>
+                            {% else %}
+                            <p>Không có hình ảnh</p>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Thông tin đầu vào</th>
+                        <td>
+                            <ul class="details-list">
+                                <li><strong>Kích thước ảnh:</strong> {{ entry.input_details['Kích thước ảnh'] }}</li>
+                                <li><strong>Tiền xử lý:</strong>
+                                    <ul class="sub-details">
+                                        {% for key, value in entry.input_details['Tiền xử lý'].items() %}
+                                        <li>{{ key }}: {{ value }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Kiến trúc</th>
+                        <td>
+                            <ul class="details-list">
+                                <li><strong>Loại mô hình:</strong> {{ entry.architecture['model_type'] }}</li>
+                                <li><strong>Số khối Conv:</strong> {{ entry.architecture['num_conv_blocks'] }}</li>
+                                <li><strong>Mỗi khối:</strong>
+                                    <ul class="sub-details">
+                                        {% for item in entry.architecture['each_block'] %}
+                                        <li>{{ item }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Lớp Dense</th>
+                        <td>
+                            <ul class="details-list">
+                                {% for key, value in entry.dense_layers.items() %}
+                                <li>{{ key }}: {{ value }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Lớp đầu ra</th>
+                        <td>
+                            <ul class="details-list">
+                                <li><strong>Số nơ-ron:</strong> {{ entry.output_layer['num_neurons'] }}</li>
+                                <li><strong>Hàm kích hoạt:</strong> {{ entry.output_layer['activation'] }}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Huấn luyện</th>
+                        <td>
+                            <ul class="details-list">
+                                {% for key, value in entry.training.items() %}
+                                <li><strong>{{ key }}:</strong> {{ value }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Hiệu năng</th>
+                        <td>
+                            <ul class="details-list">
+                                {% for key, value in entry.performance.items() %}
+                                <li><strong>{{ key }}:</strong> {{ value }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+                {% if entry.comparisons %}
+                <div class="comparison-section">
+                    <h4>So sánh với các mô hình khác:</h4>
+                    <table class="comparison-table">
+                        <tr>
+                            <th>Mô hình</th>
+                            <th>Kết quả</th>
+                            <th>Độ tin cậy</th>
+                        </tr>
+                        {% for comp in entry.comparisons %}
+                        <tr>
+                            <td>{{ comp.model }}</td>
+                            <td>{{ comp.result }}</td>
+                            <td>{{ '%0.2f'|format(comp.confidence) }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-center">Không có dữ liệu lịch sử huấn luyện.</p>
+            {% endif %}
+        </div>
+
+        <!-- Pagination -->
+        <nav aria-label="Page navigation" class="mt-4" {% if not history %}style="display: none;"{% endif %}>
+            <ul class="pagination justify-content-center" id="pagination">
+                <!-- Pagination sẽ được tạo bởi JavaScript -->
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button id="scroll-to-top" title="Cuộn lên đầu">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- Bootstrap JS and Magnific Popup -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
