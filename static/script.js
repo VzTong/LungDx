@@ -170,6 +170,11 @@ if (document.getElementById('upload-form')) {
         const errorDiv = document.getElementById('error');
         const resultText = document.getElementById('result-text');
         const errorMessage = document.getElementById('error-message');
+        const metricsTable = document.getElementById('metrics-table');
+        const accuracy = document.getElementById('accuracy');
+        const precision = document.getElementById('precision');
+        const recall = document.getElementById('recall');
+        const f1Score = document.getElementById('f1-score');
 
         overlay.style.display = 'none';
         if (fakeProgressInterval) clearInterval(fakeProgressInterval);
@@ -184,6 +189,18 @@ if (document.getElementById('upload-form')) {
             resultText.textContent = isHealthy
                 ? 'Không phát hiện bệnh phổi'
                 : `Phát hiện bệnh: ${data.result} (Độ tin cậy: ${data.confidence.toFixed(2)}%)`;
+
+            // Hiển thị bảng thông số nếu có metrics
+            if (data.metrics) {
+                accuracy.textContent = `${(data.metrics.accuracy * 100).toFixed(2)}%`;
+                precision.textContent = `${(data.metrics.precision * 100).toFixed(2)}%`;
+                recall.textContent = `${(data.metrics.recall * 100).toFixed(2)}%`;
+                f1Score.textContent = `${(data.metrics.f1_score * 100).toFixed(2)}%`;
+                metricsTable.style.display = 'block';
+            } else {
+                metricsTable.style.display = 'none';
+            }
+
             resultDiv.style.display = 'block';
             errorDiv.style.display = 'none';
         }
@@ -207,6 +224,45 @@ if (document.getElementById('upload-form')) {
         }
     });
 }
+
+// Handle Model Selection and Display Details
+const modelSelect = document.getElementById('model-select');
+if (modelSelect) {
+    modelSelect.addEventListener('change', function () {
+        const selectedModel = this.value;
+        const accordionItems = document.querySelectorAll('#outerModelAccordion .accordion-item');
+
+        // Duyệt qua tất cả các accordion-item và hiển thị/ẩn dựa trên mô hình được chọn
+        accordionItems.forEach(item => {
+            const modelName = item.querySelector('.model-title').textContent.trim();
+            if (modelName === selectedModel) {
+                item.classList.add('show'); // Hiển thị accordion-item
+                item.querySelector('.accordion-collapse').classList.add('show'); // Mở accordion
+            } else {
+                item.classList.remove('show'); // Ẩn accordion-item
+                item.querySelector('.accordion-collapse').classList.remove('show'); // Đóng accordion
+            }
+        });
+    });
+
+    // Khi trang tải, hiển thị chi tiết của mô hình mặc định
+    window.addEventListener('load', () => {
+        const defaultModel = modelSelect.value; // Lấy giá trị mặc định (lung_cnn_v1)
+        const accordionItems = document.querySelectorAll('#outerModelAccordion .accordion-item');
+        accordionItems.forEach(item => {
+            const modelName = item.querySelector('.model-title').textContent.trim();
+            if (modelName === defaultModel) {
+                item.classList.add('show');
+                item.querySelector('.accordion-collapse').classList.add('show');
+            } else {
+                item.classList.remove('show');
+                item.querySelector('.accordion-collapse').classList.remove('show');
+            }
+        });
+    });
+}
+
+// History Page Functionality
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('history-entries')) {
         console.log('History entries found, initializing pagination, image modal, and delete functionality');
@@ -426,6 +482,20 @@ document.addEventListener('DOMContentLoaded', () => {
         zoom: {
             enabled: true,
             duration: 300
+        }
+    });
+});
+
+document.querySelectorAll('.toggle-details').forEach(button => {
+    button.addEventListener('click', () => {
+        const id = button.getAttribute('data-id');
+        const detailsSection = document.getElementById(`details-${id}`);
+        if (detailsSection.style.display === 'none') {
+            detailsSection.style.display = 'block';
+            button.textContent = 'Ẩn chi tiết';
+        } else {
+            detailsSection.style.display = 'none';
+            button.textContent = 'Xem chi tiết';
         }
     });
 });
