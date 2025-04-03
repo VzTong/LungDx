@@ -588,6 +588,15 @@ body.light-mode .card-header {
 }
 
 /* Accordion Styles */
+
+.accordion-item {
+    display: none; /* Ẩn tất cả các item mặc định */
+}
+
+.accordion-item.show {
+    display: block; /* Hiển thị item được chọn */
+}
+
 #outerModelAccordion .accordion-item {
     background: transparent;
     border: none;
