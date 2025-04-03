@@ -1,26 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch sử huấn luyện - Lung Diagnosis</title>
+    <title>Lịch sử phân tích - Lung Diagnosis</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.css">
 </head>
+
 <body class="dark-mode">
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
             <a class="navbar-brand" href="/">Lung Cancer Diagnosis</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/history">Lịch sử huấn luyện</a>
+                        <a class="nav-link" href="/history">Lịch sử phân tích</a>
                     </li>
                     <li class="nav-item">
                         <button id="theme-toggle" class="btn nav-link"><i class="fas fa-moon"></i></button>
@@ -31,7 +34,7 @@
     </nav>
 
     <div class="container mt-5 pt-5">
-        <h1 class="text-center mb-4">Lịch sử huấn luyện</h1>
+        <h1 class="text-center mb-4">Lịch sử phân tích</h1>
 
         <!-- History Entries -->
         <div id="history-entries" class="history-entries">
@@ -58,8 +61,10 @@
                         <td>
                             {% if entry.original_image %}
                             <div class="image-container">
-                                <a href="{{ url_for('uploaded_file', filename=entry.original_image.split('/')[-1]) }}" class="image-popup">
-                                    <img src="{{ url_for('uploaded_file', filename=entry.original_image.split('/')[-1]) }}" alt="Ảnh đầu vào" class="history-image img-fluid" loading="lazy">
+                                <a href="{{ url_for('uploaded_file', filename=entry.original_image.split('/')[-1]) }}"
+                                    class="image-popup">
+                                    <img src="{{ url_for('uploaded_file', filename=entry.original_image.split('/')[-1]) }}"
+                                        alt="Ảnh đầu vào" class="history-image img-fluid" loading="lazy">
                                 </a>
                             </div>
                             {% else %}
@@ -90,9 +95,13 @@
                                 <li><strong>Số khối Conv:</strong> {{ entry.architecture['num_conv_blocks'] }}</li>
                                 <li><strong>Mỗi khối:</strong>
                                     <ul class="sub-details">
-                                        {% for item in entry.architecture['each_block'] %}
-                                        <li>{{ item }}</li>
-                                        {% endfor %}
+                                        {% if entry.architecture.get('each_block') is mapping %}
+                                            {% for key, value in entry.architecture.get('each_block').items() %}
+                                            <li>{{ key }}: {{ value }}</li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li>Không có thông tin chi tiết về mỗi khối.</li>
+                                        {% endif %}
                                     </ul>
                                 </li>
                             </ul>
@@ -138,34 +147,103 @@
                         </td>
                     </tr>
                 </table>
-                {% if entry.comparisons %}
-                <div class="comparison-section">
-                    <h4>So sánh với các mô hình khác:</h4>
-                    <table class="comparison-table">
-                        <tr>
-                            <th>Mô hình</th>
-                            <th>Kết quả</th>
-                            <th>Độ tin cậy</th>
-                        </tr>
-                        {% for comp in entry.comparisons %}
-                        <tr>
-                            <td>{{ comp.model }}</td>
-                            <td>{{ comp.result }}</td>
-                            <td>{{ '%0.2f'|format(comp.confidence) }}%</td>
-                        </tr>
-                        {% endfor %}
-                    </table>
+
+                <!-- Thêm bảng thông số metrics -->
+                {% if entry.ground_truth or entry.comparisons %}
+                <button class="btn btn-info btn-sm toggle-details" data-id="{{ loop.index0 }}">Xem chi tiết</button>
+                <div class="details-section" id="details-{{ loop.index0 }}" style="display: none;">
+                    {% if entry.ground_truth %}
+                    <div class="metrics-section">
+                        <h4>Nhãn thực tế: {{ entry.ground_truth }}</h4>
+                        {% if entry.metrics %}
+                        <div class="metrics-table">
+                            <h5>Thông số hiệu suất</h5>
+                            <table class="table table-dark">
+                                <thead>
+                                    <tr>
+                                        <th>Chỉ số</th>
+                                        <th>Giá trị</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Accuracy</td>
+                                        <td>{{ '%0.2f'|format(entry.metrics.accuracy * 100) }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Precision</td>
+                                        <td>{{ '%0.2f'|format(entry.metrics.precision * 100) }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Recall</td>
+                                        <td>{{ '%0.2f'|format(entry.metrics.recall * 100) }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>F1 Score</td>
+                                        <td>{{ '%0.2f'|format(entry.metrics.f1_score * 100) }}%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    <!-- Phần so sánh với các mô hình khác -->
+                    {% if entry.comparisons %}
+                    <div class="comparison-section mt-3">
+                        <h4>So sánh với các mô hình khác:</h4>
+                        <table class="comparison-table table table-dark">
+                            <thead>
+                                <tr>
+                                    <th>Mô hình</th>
+                                    <th>Kết quả</th>
+                                    <th>Độ tin cậy</th>
+                                    <th>Accuracy</th>
+                                    <th>Precision</th>
+                                    <th>Recall</th>
+                                    <th>F1 Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ entry.model }}</td>
+                                    <td>{{ entry.result }}</td>
+                                    <td>{{ '%0.2f'|format(entry.confidence) }}%</td>
+                                    <td>{{ '%0.2f'|format(entry.metrics.accuracy * 100) if entry.metrics else '-' }}%
+                                    </td>
+                                    <td>{{ '%0.2f'|format(entry.metrics.precision * 100) if entry.metrics else '-' }}%
+                                    </td>
+                                    <td>{{ '%0.2f'|format(entry.metrics.recall * 100) if entry.metrics else '-' }}%</td>
+                                    <td>{{ '%0.2f'|format(entry.metrics.f1_score * 100) if entry.metrics else '-' }}%
+                                    </td>
+                                </tr>
+                                {% for comp in entry.comparisons %}
+                                <tr>
+                                    <td>{{ comp.model }}</td>
+                                    <td>{{ comp.result }}</td>
+                                    <td>{{ '%0.2f'|format(comp.confidence) }}%</td>
+                                    <td>{{ '%0.2f'|format(comp.metrics.accuracy * 100) if comp.metrics else '-' }}%</td>
+                                    <td>{{ '%0.2f'|format(comp.metrics.precision * 100) if comp.metrics else '-' }}%
+                                    </td>
+                                    <td>{{ '%0.2f'|format(comp.metrics.recall * 100) if comp.metrics else '-' }}%</td>
+                                    <td>{{ '%0.2f'|format(comp.metrics.f1_score * 100) if comp.metrics else '-' }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
                 </div>
                 {% endif %}
             </div>
             {% endfor %}
             {% else %}
-            <p class="text-center">Không có dữ liệu lịch sử huấn luyện.</p>
+            <p class="text-center">Không có dữ liệu lịch sử phân tích.</p>
             {% endif %}
         </div>
 
         <!-- Pagination -->
-        <nav aria-label="Page navigation" class="mt-4" {% if not history %}style="display: none;"{% endif %}>
+        <nav aria-label="Page navigation" class="mt-4" {% if not history %}style="display: none;" {% endif %}>
             <ul class="pagination justify-content-center" id="pagination">
                 <!-- Pagination sẽ được tạo bởi JavaScript -->
             </ul>
@@ -184,4 +262,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
+
 </html>
