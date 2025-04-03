@@ -12,8 +12,14 @@ matplotlib.use('Agg')
 import cv2
 from datetime import datetime
 import json
-from io import StringIO
-import sys
+import re
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+from tensorflow.keras.saving import register_keras_serializable
+
+# Định nghĩa và đăng ký hàm grayscale_to_rgb
+@register_keras_serializable()
+def grayscale_to_rgb(image):
+    return tf.tile(image, [1, 1, 1, 3])
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -64,7 +70,7 @@ models_info = {
                     "Tăng cường dữ liệu": "Lật ngang, xoay (-15° đến 15°), thay đổi độ sáng (±20%)"
                 }
             },
-            "Cấu trúc CNN": {
+            "Cấu trúc mô hình": {
                 "model_type": "CNN nhiều tầng với CBAM Attention Mechanism",
                 "num_conv_blocks": 3,
                 "each_block": {
@@ -100,6 +106,60 @@ models_info = {
         "accuracy_plot": "v1_training_plots.png",
         "confusion_matrix": "v1_confusion_matrix.png",
         "architecture": "lung_cnn_model_v1_architecture.png"
+    },
+    "lung_resnet50_v2": {
+        "path": "model/lung_resnet50_model_v2.keras",
+        "converted_path": "model/lung_resnet50_model_v2_converted.keras",
+        "description": "Mô hình ResNet50 cải tiến với CBAM để phân loại 5 tình trạng phổi từ ảnh X-quang.",
+        "details": {
+            "Đầu vào": {
+                "Kích thước ảnh": "224x224 pixels, grayscale",
+                "Tiền xử lý": {
+                    "Ngưỡng Otsu": "Tự động tách nền khỏi ảnh X-quang bằng phương pháp Otsu",
+                    "Normalization": "Zero-mean và unit-variance (μ = 0, σ = 1)",
+                    "Tăng cường dữ liệu": "Lật ngang ngẫu nhiên, dịch chuyển ngẫu nhiên (height_factor=0.1, width_factor=0.1)"
+                }
+            },
+            "Cấu trúc mô hình": {
+                "model_type": "ResNet50 với CBAM Attention Mechanism",
+                "base_model": "ResNet50 pre-trained trên ImageNet, đóng băng các tầng trừ conv5_block để fine-tune",
+                "input_conversion": "Chuyển ảnh grayscale sang RGB (3 kênh) để phù hợp với ResNet50",
+                "cbam_block": {
+                    "Channel Attention": "Tập trung vào các kênh quan trọng với ratio=8",
+                    "Spatial Attention": "Tập trung vào các vùng không gian quan trọng với kernel 7x7",
+                    "Position": "Áp dụng sau ResNet50 để tăng cường trích xuất đặc trưng"
+                },
+                "pooling": "GlobalAveragePooling2D để giảm kích thước đặc trưng"
+            },
+            "dense_layers": {
+                "dense_512": "512 nơ-ron, Dropout 0.6, activation ReLU, L2 regularization (0.001)",
+                "dense_256": "256 nơ-ron, Dropout 0.6, activation ReLU, L2 regularization (0.001)"
+            },
+            "output_layer": {
+                "num_neurons": 5,
+                "activation": "Softmax"
+            },
+            "training": {
+                "optimizer": "Adam (lr=1e-5)",
+                "loss_function": "sparse_categorical_crossentropy",
+                "epochs": 70,
+                "mixed_precision": "float16",
+                "mini_batch_size": 16,
+                "train_steps_per_epoch": 190,
+                "val_steps_per_epoch": 64,
+                "lr_scheduler": "ReduceLROnPlateau (factor=0.5, patience=7, min_lr=1e-7)",
+                "early_stopping": "patience=15, dựa trên val_loss",
+                "checkpoint": "Lưu mô hình tốt nhất dựa trên val_accuracy"
+            },
+            "Hiệu suất": {
+                "test_accuracy": "85.23%",
+                "best_val_accuracy": "85.94% (Epoch 69)",
+                "best_val_loss": "1.1270 (Epoch 69)"
+            }
+        },
+        "accuracy_plot": "training_plots_resnet50_v2.png",
+        "confusion_matrix": "confusion_matrix_resnet50_v2.png",
+        "architecture": "lung_resnet50_model_v2_architecture.png"
     }
 }
 
@@ -171,7 +231,6 @@ def preprocess_image(image_path: str) -> tuple:
         if not os.path.exists(image_path):
             raise ValueError(f"File không tồn tại: {image_path}")
 
-        # Đọc ảnh dưới dạng grayscale
         original_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
         if original_image is None:
             raise ValueError(f"Không thể đọc ảnh từ {image_path}")
@@ -179,23 +238,19 @@ def preprocess_image(image_path: str) -> tuple:
         print(f"Shape ảnh gốc: {original_image.shape}")
         display_image = original_image.copy()
 
-        # Chuyển sang tensor và thêm chiều kênh
         image = tf.convert_to_tensor(original_image, dtype=tf.float32)
-        image = tf.expand_dims(image, axis=-1)  # Shape: (H, W, 1)
+        image = tf.expand_dims(image, axis=-1)
 
         socketio.emit('progress', {'percentage': 20})
-        # Resize ảnh
         image = tf.image.resize(image, [224, 224], method='area')
         print(f"Shape sau khi resize: {image.shape}")
 
         socketio.emit('progress', {'percentage': 30})
-        # Chuẩn hóa (zero-mean, unit-variance)
         mean = tf.reduce_mean(image)
         std_dev = tf.math.reduce_std(image)
         image = (image - mean) / (std_dev if std_dev > 0 else 1.0)
 
         socketio.emit('progress', {'percentage': 40})
-        # Tách nền bằng Otsu Thresholding
         img_for_threshold = image[:, :, 0]
         image_scaled = (img_for_threshold - tf.reduce_min(img_for_threshold)) / (
             tf.reduce_max(img_for_threshold) - tf.reduce_min(img_for_threshold) + 1e-6
@@ -213,27 +268,23 @@ def preprocess_image(image_path: str) -> tuple:
         binary_mask = tf.cast(image_scaled >= tf.cast(threshold, tf.float32), tf.float32)
 
         socketio.emit('progress', {'percentage': 50})
-        # Áp dụng morphological operations using OpenCV
         kernel = np.ones((5, 5), np.float32)
-        binary_mask = cv2.dilate(binary_mask.numpy(), kernel, iterations=1)  # Convert to NumPy for OpenCV
+        binary_mask = cv2.dilate(binary_mask.numpy(), kernel, iterations=1)
         binary_mask = cv2.erode(binary_mask, kernel, iterations=1)
-        binary_mask = tf.convert_to_tensor(binary_mask, dtype=tf.float32)  # Convert back to TensorFlow tensor
+        binary_mask = tf.convert_to_tensor(binary_mask, dtype=tf.float32)
 
-        # Áp dụng mask lên ảnh
         image = image * binary_mask[..., tf.newaxis]
 
         socketio.emit('progress', {'percentage': 60})
-        # Data Augmentation (lật ngang và dịch chuyển)
-        if np.random.random() > 0.5:  # 50% khả năng lật ngang
+        if np.random.random() > 0.5:
             image = tf.image.random_flip_left_right(image)
         translation_layer = tf.keras.layers.RandomTranslation(
             height_factor=0.1, width_factor=0.1, fill_mode='nearest'
         )
         image = translation_layer(image, training=True)
 
-        # Đảm bảo shape cố định
         image = tf.ensure_shape(image, [224, 224, 1])
-        image = tf.expand_dims(image, axis=0)  # Thêm batch dimension
+        image = tf.expand_dims(image, axis=0)
 
         socketio.emit('progress', {'percentage': 80})
         if image.shape != (1, 224, 224, 1):
@@ -244,6 +295,14 @@ def preprocess_image(image_path: str) -> tuple:
     except Exception as e:
         socketio.emit('error', {'message': f"Lỗi tiền xử lý hình ảnh: {str(e)}"})
         raise
+
+def extract_ground_truth_from_filename(filename: str) -> str:
+    base_name = re.sub(r'_\d+$', '', filename)
+    words = re.findall(r'[A-Z]?[a-z]+|[A-Z]+(?=[A-Z][a-z]|\b)', base_name)
+    label = ' '.join(words).strip()
+    if label in classes:
+        return label
+    return None
 
 def analyze_image(image_path: str, model_name: str) -> tuple:
     start_time = time.time()
@@ -263,36 +322,58 @@ def analyze_image(image_path: str, model_name: str) -> tuple:
         print(f"Dự đoán mất: {time.time() - predict_start:.2f} giây")
         socketio.emit('progress', {'percentage': 100})
 
-        print("Raw prediction:", prediction)
-        print("Phân phối xác suất:")
-        for i, prob in enumerate(prediction[0]):
-            print(f"{classes[i]} ({class_translations[classes[i]]}): {prob*100:.2f}%")
-
         class_index = np.argmax(prediction[0])
         confidence = float(np.max(prediction[0]) * 100)
         result = classes[class_index]
-        result_vn = class_translations[result]  # Lấy tên tiếng Việt
-        print(f"Kết quả dự đoán: {result} ({result_vn}) với độ tin cậy {confidence:.2f}%")
-        print(f"Tổng thời gian phân tích: {time.time() - start_time:.2f} giây")
+        result_vn = class_translations[result]
 
-        # Lưu thông tin phân tích vào lịch sử
+        filename = os.path.basename(image_path)
+        ground_truth = extract_ground_truth_from_filename(os.path.splitext(filename)[0])
+
         history_entry = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "result": f"{result} ({result_vn})",  # Lưu cả tiếng Anh và tiếng Việt
+            "result": f"{result} ({result_vn})",
             "confidence": confidence,
             "model": model_name,
-            "original_image": f"/uploads/{os.path.basename(image_path)}",
+            "original_image": f"/uploads/{filename}",
             "input_details": models_info[model_name]["details"]["Đầu vào"],
-            "architecture": models_info[model_name]["details"]["Cấu trúc CNN"],
+            "architecture": models_info[model_name]["details"]["Cấu trúc mô hình"],
             "dense_layers": models_info[model_name]["details"]["dense_layers"],
             "output_layer": models_info[model_name]["details"]["output_layer"],
             "training": models_info[model_name]["details"]["training"],
             "performance": models_info[model_name]["details"]["Hiệu suất"]
         }
+
+        metrics = None
+        if ground_truth:
+            history_entry["ground_truth"] = ground_truth
+            y_true = [classes.index(ground_truth)]
+            y_pred = [class_index]
+            metrics = {
+                "accuracy": float(accuracy_score(y_true, y_pred)),
+                "precision": float(precision_score(y_true, y_pred, average='macro', zero_division=0)),
+                "recall": float(recall_score(y_true, y_pred, average='macro', zero_division=0)),
+                "f1_score": float(f1_score(y_true, y_pred, average='macro', zero_division=0))
+            }
+            history_entry["metrics"] = metrics
+
+        history_entry["comparisons"] = []
+        for past_entry in history:
+            if (past_entry["original_image"] == history_entry["original_image"] and
+                past_entry["model"] != model_name):
+                comp = {
+                    "model": past_entry["model"],
+                    "result": past_entry["result"],
+                    "confidence": past_entry["confidence"]
+                }
+                if "metrics" in past_entry:
+                    comp["metrics"] = past_entry["metrics"]
+                history_entry["comparisons"].append(comp)
+
         history.append(history_entry)
         save_history(history)
 
-        return result, confidence, original_image
+        return result, confidence, original_image, metrics
     except Exception as e:
         error_msg = f"Lỗi phân tích: {str(e)}"
         print(error_msg)
@@ -305,12 +386,12 @@ def home():
 
 @app.route('/history')
 def history_page():
-    # Tải lại lịch sử từ file mỗi khi truy cập trang (đảm bảo dữ liệu mới nhất)
     global history
     history = load_history()
-    # Sắp xếp lịch sử theo timestamp giảm dần (mới nhất lên đầu)
     history.sort(key=lambda x: x['timestamp'], reverse=True)
-    return render_template('history.html', history=history, models=models_info)
+    # Chỉ trả về 10 mục mới nhất
+    limited_history = history[:10]
+    return render_template('history.html', history=limited_history, models=models_info)
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -360,11 +441,12 @@ def analyze():
         if model_name not in models_info:
             return jsonify({'error': 'Mô hình không hợp lệ'}), 400
 
-        result, confidence, original_image = analyze_image(filepath, model_name)
+        result, confidence, original_image, metrics = analyze_image(filepath, model_name)
         result_data = {
             'result': result,
             'confidence': confidence,
-            'original_image': f"/uploads/{filename}"
+            'original_image': f"/uploads/{filename}",
+            'metrics': metrics
         }
         print(f"Dữ liệu gửi qua SocketIO: {result_data}")
         socketio.emit('result', result_data)
