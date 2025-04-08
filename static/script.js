@@ -190,7 +190,6 @@ if (document.getElementById('upload-form')) {
                 ? 'Không phát hiện bệnh phổi'
                 : `Phát hiện bệnh: ${data.result} (Độ tin cậy: ${data.confidence.toFixed(2)}%)`;
 
-            // Hiển thị bảng thông số nếu có metrics
             if (data.metrics) {
                 accuracy.textContent = `${(data.metrics.accuracy * 100).toFixed(2)}%`;
                 precision.textContent = `${(data.metrics.precision * 100).toFixed(2)}%`;
@@ -232,22 +231,20 @@ if (modelSelect) {
         const selectedModel = this.value;
         const accordionItems = document.querySelectorAll('#outerModelAccordion .accordion-item');
 
-        // Duyệt qua tất cả các accordion-item và hiển thị/ẩn dựa trên mô hình được chọn
         accordionItems.forEach(item => {
             const modelName = item.querySelector('.model-title').textContent.trim();
             if (modelName === selectedModel) {
-                item.classList.add('show'); // Hiển thị accordion-item
-                item.querySelector('.accordion-collapse').classList.add('show'); // Mở accordion
+                item.classList.add('show');
+                item.querySelector('.accordion-collapse').classList.add('show');
             } else {
-                item.classList.remove('show'); // Ẩn accordion-item
-                item.querySelector('.accordion-collapse').classList.remove('show'); // Đóng accordion
+                item.classList.remove('show');
+                item.querySelector('.accordion-collapse').classList.remove('show');
             }
         });
     });
 
-    // Khi trang tải, hiển thị chi tiết của mô hình mặc định
     window.addEventListener('load', () => {
-        const defaultModel = modelSelect.value; // Lấy giá trị mặc định (lung_cnn_v1)
+        const defaultModel = modelSelect.value;
         const accordionItems = document.querySelectorAll('#outerModelAccordion .accordion-item');
         accordionItems.forEach(item => {
             const modelName = item.querySelector('.model-title').textContent.trim();
@@ -273,15 +270,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const totalPages = Math.ceil(totalEntries / entriesPerPage);
         let currentPage = 1;
 
-        // Sắp xếp lại các mục lịch sử để mục mới nhất lên đầu
         function sortEntriesByTimestamp() {
             entries.sort((a, b) => {
-                const timestampA = a.querySelector('.timestamp')?.textContent || '';
-                const timestampB = b.querySelector('.timestamp')?.textContent || '';
-                return new Date(timestampB) - new Date(timestampA); // Sắp xếp giảm dần (mới nhất lên đầu)
+                const timestampA = a.querySelector('h3')?.textContent.replace('Phân tích lúc: ', '').trim() || '';
+                const timestampB = b.querySelector('h3')?.textContent.replace('Phân tích lúc: ', '').trim() || '';
+                return new Date(timestampB) - new Date(timestampA);
             });
 
-            // Xóa các mục hiện tại trong DOM và thêm lại theo thứ tự đã sắp xếp
             entries.forEach(entry => historyContainer.removeChild(entry));
             entries.forEach(entry => historyContainer.appendChild(entry));
         }
@@ -292,11 +287,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 entry.style.display = (index >= (page - 1) * entriesPerPage && index < page * entriesPerPage) ? 'block' : 'none';
             });
 
-            // Update Pagination
             const pagination = document.getElementById('pagination');
             pagination.innerHTML = '';
 
-            // Previous Button
             const prevLi = document.createElement('li');
             prevLi.className = 'page-item' + (currentPage === 1 ? ' disabled' : '');
             prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">«</span></a>`;
@@ -309,7 +302,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             pagination.appendChild(prevLi);
 
-            // Page Numbers
             for (let i = 1; i <= totalPages; i++) {
                 const li = document.createElement('li');
                 li.className = 'page-item' + (i === page ? ' active' : '');
@@ -322,7 +314,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 pagination.appendChild(li);
             }
 
-            // Next Button
             const nextLi = document.createElement('li');
             nextLi.className = 'page-item' + (currentPage === totalPages ? ' disabled' : '');
             nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">»</span></a>`;
@@ -336,40 +327,48 @@ document.addEventListener('DOMContentLoaded', () => {
             pagination.appendChild(nextLi);
         }
 
-        // Initial Page Load
         if (totalEntries > 0) {
-            sortEntriesByTimestamp(); // Sắp xếp lại các mục trước khi hiển thị
+            sortEntriesByTimestamp();
             showPage(currentPage);
         } else {
             console.warn('No history entries found');
         }
 
-        // Image Modal
-        const images = document.querySelectorAll('.history-image');
-        const modal = document.getElementById('imageModal');
-        const modalImage = document.getElementById('modal-image');
-
-        if (images.length > 0) {
-            console.log('Found', images.length, 'history images, attaching click events');
-            images.forEach(image => {
-                image.addEventListener('click', () => {
-                    console.log('Image clicked:', image.src);
-                    if (modalImage && modal) {
-                        modalImage.src = image.src;
-                        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                            const bsModal = new bootstrap.Modal(modal);
-                            bsModal.show();
-                        } else {
-                            console.error('Bootstrap Modal is not available');
-                        }
-                    } else {
-                        console.error('Modal or modal image element not found');
-                    }
-                });
+        // Toggle Details Section
+        document.querySelectorAll('.toggle-details').forEach(button => {
+            button.addEventListener('click', () => {
+                const id = button.getAttribute('data-id');
+                const detailsSection = document.getElementById(`details-${id}`);
+                if (detailsSection.style.display === 'none' || detailsSection.style.display === '') {
+                    detailsSection.style.display = 'block';
+                    button.textContent = 'Ẩn so sánh mô hình';
+                } else {
+                    detailsSection.style.display = 'none';
+                    button.textContent = 'Xem so sánh mô hình';
+                }
             });
-        } else {
-            console.warn('No history images found');
-        }
+        });
+
+        // Image Popup with Magnific Popup
+        $('.image-popup').magnificPopup({
+            type: 'image',
+            closeOnContentClick: true,
+            closeBtnInside: false,
+            fixedContentPos: true,
+            mainClass: 'mfp-no-margins mfp-with-zoom',
+            gallery: {
+                enabled: true,
+                navigateByImgClick: true,
+                preload: [0, 1]
+            },
+            image: {
+                verticalFit: true
+            },
+            zoom: {
+                enabled: true,
+                duration: 300
+            }
+        });
 
         // Delete History Entry
         const deleteButtons = document.querySelectorAll('.delete-entry');
@@ -386,16 +385,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         .then(data => {
                             if (data.message) {
                                 alert(data.message);
-                                // Xóa phần tử khỏi DOM
                                 const entry = document.querySelector(`.history-entry[data-id="${index}"]`);
                                 if (entry) {
                                     entry.remove();
-                                    entries = Array.from(document.querySelectorAll('.history-entry')); // Cập nhật lại danh sách entries
+                                    entries = Array.from(document.querySelectorAll('.history-entry'));
                                     if (entries.length === 0) {
-                                        historyContainer.innerHTML = '<p class="text-center">Không có dữ liệu lịch sử huấn luyện.</p>';
+                                        historyContainer.innerHTML = '<p class="text-center">Không có dữ liệu lịch sử phân tích.</p>';
                                     } else {
-                                        sortEntriesByTimestamp(); // Sắp xếp lại sau khi xóa
-                                        showPage(currentPage); // Cập nhật lại trang hiện tại
+                                        sortEntriesByTimestamp();
+                                        showPage(currentPage);
                                     }
                                 }
                             } else if (data.error) {
@@ -412,8 +410,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             console.warn('No delete buttons found');
         }
-    } else {
-        console.warn('History entries not found');
     }
 
     // Handle Upload Box Click and Drag & Drop
@@ -463,39 +459,4 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Drop zone, file input, or file name display not found');
     }
-
-    // Magnific Popup for Images
-    $('.image-popup').magnificPopup({
-        type: 'image',
-        closeOnContentClick: true,
-        closeBtnInside: false,
-        fixedContentPos: true,
-        mainClass: 'mfp-no-margins mfp-with-zoom',
-        gallery: {
-            enabled: true,
-            navigateByImgClick: true,
-            preload: [0, 1]
-        },
-        image: {
-            verticalFit: true
-        },
-        zoom: {
-            enabled: true,
-            duration: 300
-        }
-    });
-});
-
-document.querySelectorAll('.toggle-details').forEach(button => {
-    button.addEventListener('click', () => {
-        const id = button.getAttribute('data-id');
-        const detailsSection = document.getElementById(`details-${id}`);
-        if (detailsSection.style.display === 'none') {
-            detailsSection.style.display = 'block';
-            button.textContent = 'Ẩn chi tiết';
-        } else {
-            detailsSection.style.display = 'none';
-            button.textContent = 'Xem chi tiết';
-        }
-    });
 });
