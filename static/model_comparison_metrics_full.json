@@ -1,0 +1,100 @@
+{
+    "classes": [
+        "Normal",
+        "Bacterial Pneumonia",
+        "Corona Virus Disease",
+        "Tuberculosis",
+        "Viral Pneumonia"
+    ],
+    "per_class_comparison": [
+        {
+            "class": "Normal",
+            "cnn_precision": 0.8997613365155132,
+            "resnet_precision": 0.9113300492610837,
+            "precision_diff": 0.011568712745570586,
+            "cnn_recall": 0.9331683168316832,
+            "resnet_recall": 0.9158415841584159,
+            "recall_diff": -0.017326732673267342,
+            "cnn_f1": 0.9161603888213852,
+            "resnet_f1": 0.9135802469135802,
+            "f1_diff": -0.002580141907804978,
+            "cnn_auc": 0.9925330287501298,
+            "resnet_auc": 0.9893431508480892,
+            "auc_diff": -0.0031898779020406165
+        },
+        {
+            "class": "Bacterial Pneumonia",
+            "cnn_precision": 0.7494305239179955,
+            "resnet_precision": 0.7230046948356808,
+            "precision_diff": -0.026425829082314722,
+            "cnn_recall": 0.8163771712158809,
+            "resnet_recall": 0.7642679900744417,
+            "recall_diff": -0.052109181141439254,
+            "cnn_f1": 0.7814726840855107,
+            "resnet_f1": 0.7430639324487334,
+            "f1_diff": -0.03840875163677737,
+            "cnn_auc": 0.9574645155170989,
+            "resnet_auc": 0.9439361998329422,
+            "auc_diff": -0.013528315684156689
+        },
+        {
+            "class": "Corona Virus Disease",
+            "cnn_precision": 0.9720101781170484,
+            "resnet_precision": 0.9591836734693877,
+            "precision_diff": -0.012826504647660664,
+            "cnn_recall": 0.9385749385749386,
+            "resnet_recall": 0.9238329238329238,
+            "recall_diff": -0.014742014742014753,
+            "cnn_f1": 0.955,
+            "resnet_f1": 0.9411764705882353,
+            "f1_diff": -0.013823529411764679,
+            "cnn_auc": 0.9974442922526978,
+            "resnet_auc": 0.9933320780045132,
+            "auc_diff": -0.004112214248184642
+        },
+        {
+            "class": "Tuberculosis",
+            "cnn_precision": 0.975669099756691,
+            "resnet_precision": 0.9663461538461539,
+            "precision_diff": -0.009322945910537173,
+            "cnn_recall": 0.9828431372549019,
+            "resnet_recall": 0.9852941176470589,
+            "recall_diff": 0.002450980392156965,
+            "cnn_f1": 0.9792429792429792,
+            "resnet_f1": 0.9757281553398058,
+            "f1_diff": -0.0035148239031733697,
+            "cnn_auc": 0.9991587544108552,
+            "resnet_auc": 0.9976005553736645,
+            "auc_diff": -0.0015581990371906773
+        },
+        {
+            "class": "Viral Pneumonia",
+            "cnn_precision": 0.7548209366391184,
+            "resnet_precision": 0.7038961038961039,
+            "precision_diff": -0.050924832743014514,
+            "cnn_recall": 0.6799007444168734,
+            "resnet_recall": 0.6724565756823822,
+            "recall_diff": -0.007444168734491274,
+            "cnn_f1": 0.7154046997389034,
+            "resnet_f1": 0.6878172588832487,
+            "f1_diff": -0.027587440855654677,
+            "cnn_auc": 0.9434099371850455,
+            "resnet_auc": 0.9325052855739782,
+            "auc_diff": -0.01090465161106735
+        }
+    ],
+    "weighted_comparison": {
+        "cnn_precision": 0.8708138537042729,
+        "resnet_precision": 0.8532717766230412,
+        "precision_diff": -0.017542077081231677,
+        "cnn_recall": 0.8706172839506173,
+        "resnet_recall": 0.8528395061728395,
+        "recall_diff": -0.01777777777777778,
+        "cnn_f1": 0.8699192682944267,
+        "resnet_f1": 0.8527839263051493,
+        "f1_diff": -0.017135341989277353,
+        "cnn_auc": 0.9780021056231654,
+        "resnet_auc": 0.9713434539266375,
+        "auc_diff": -0.006658651696527906
+    }
+}
