@@ -56,6 +56,19 @@ def save_history(history_data):
 # Khởi tạo lịch sử từ file history.json
 history = load_history()
 
+# Đọc file so sánh từ static
+COMPARISON_JSON_PATH = os.path.join(app.static_folder, 'model_comparison_metrics_full.json')
+
+def load_comparison_data():
+    if os.path.exists(COMPARISON_JSON_PATH):
+        try:
+            with open(COMPARISON_JSON_PATH, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Lỗi khi đọc file {COMPARISON_JSON_PATH}: {str(e)}")
+            return {}
+    return {}
+
 models_info = {
     "lung_cnn_v1": {
         "path": "model/lung_cnn_model_v1.keras",
@@ -296,14 +309,6 @@ def preprocess_image(image_path: str) -> tuple:
         socketio.emit('error', {'message': f"Lỗi tiền xử lý hình ảnh: {str(e)}"})
         raise
 
-def extract_ground_truth_from_filename(filename: str) -> str:
-    base_name = re.sub(r'_\d+$', '', filename)
-    words = re.findall(r'[A-Z]?[a-z]+|[A-Z]+(?=[A-Z][a-z]|\b)', base_name)
-    label = ' '.join(words).strip()
-    if label in classes:
-        return label
-    return None
-
 def analyze_image(image_path: str, model_name: str) -> tuple:
     start_time = time.time()
     try:
@@ -328,7 +333,6 @@ def analyze_image(image_path: str, model_name: str) -> tuple:
         result_vn = class_translations[result]
 
         filename = os.path.basename(image_path)
-        ground_truth = extract_ground_truth_from_filename(os.path.splitext(filename)[0])
 
         history_entry = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -344,36 +348,10 @@ def analyze_image(image_path: str, model_name: str) -> tuple:
             "performance": models_info[model_name]["details"]["Hiệu suất"]
         }
 
-        metrics = None
-        if ground_truth:
-            history_entry["ground_truth"] = ground_truth
-            y_true = [classes.index(ground_truth)]
-            y_pred = [class_index]
-            metrics = {
-                "accuracy": float(accuracy_score(y_true, y_pred)),
-                "precision": float(precision_score(y_true, y_pred, average='macro', zero_division=0)),
-                "recall": float(recall_score(y_true, y_pred, average='macro', zero_division=0)),
-                "f1_score": float(f1_score(y_true, y_pred, average='macro', zero_division=0))
-            }
-            history_entry["metrics"] = metrics
-
-        history_entry["comparisons"] = []
-        for past_entry in history:
-            if (past_entry["original_image"] == history_entry["original_image"] and
-                past_entry["model"] != model_name):
-                comp = {
-                    "model": past_entry["model"],
-                    "result": past_entry["result"],
-                    "confidence": past_entry["confidence"]
-                }
-                if "metrics" in past_entry:
-                    comp["metrics"] = past_entry["metrics"]
-                history_entry["comparisons"].append(comp)
-
         history.append(history_entry)
         save_history(history)
 
-        return result, confidence, original_image, metrics
+        return result, confidence, original_image
     except Exception as e:
         error_msg = f"Lỗi phân tích: {str(e)}"
         print(error_msg)
@@ -391,7 +369,9 @@ def history_page():
     history.sort(key=lambda x: x['timestamp'], reverse=True)
     # Chỉ trả về 10 mục mới nhất
     limited_history = history[:10]
-    return render_template('history.html', history=limited_history, models=models_info)
+    # Đọc dữ liệu so sánh từ file JSON trong thư mục static
+    comparison_data = load_comparison_data()
+    return render_template('history.html', history=limited_history, models=models_info, comparison_data=comparison_data)
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -441,12 +421,11 @@ def analyze():
         if model_name not in models_info:
             return jsonify({'error': 'Mô hình không hợp lệ'}), 400
 
-        result, confidence, original_image, metrics = analyze_image(filepath, model_name)
+        result, confidence, original_image = analyze_image(filepath, model_name)
         result_data = {
             'result': result,
             'confidence': confidence,
             'original_image': f"/uploads/{filename}",
-            'metrics': metrics
         }
         print(f"Dữ liệu gửi qua SocketIO: {result_data}")
         socketio.emit('result', result_data)
