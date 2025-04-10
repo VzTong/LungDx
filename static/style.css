@@ -308,6 +308,7 @@ body.light-mode .upload-box:hover {
 .result {
     display: none;
     margin-top: 20px;
+    margin-bottom: 30px;
     padding: 15px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
@@ -368,6 +369,18 @@ body.light-mode .result {
 
 .result-disease {
     color: #dc3545; /* Màu đỏ cho bệnh lý */
+}
+
+/* Timestamp List */
+.timestamp-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.timestamp-list li {
+    margin-bottom: 5px;
+    font-size: 0.95em;
 }
 
 /* Details Section */
@@ -443,7 +456,7 @@ body.light-mode .comparison-table td {
 
 .comparison-table td:nth-child(4):not(:empty)[data-diff^="+"],
 .comparison-table td:nth-child(7):not(:empty)[data-diff^="+"],
-.comparison-table td:nth-child(10):not(:empty)[data-diff^="+"],
+.comparison-table td:nth-child(10):not(:empty)[data-diff^="+"] ,
 .comparison-table td:nth-child(13):not(:empty)[data-diff^="+"] {
     color: #28a745;
 }
