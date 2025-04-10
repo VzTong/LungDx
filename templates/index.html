@@ -20,11 +20,11 @@
     <!-- Analyzing Overlay -->
     <div id="analyzing-overlay" style="display: none;">
         <div class="analyzing-content">
-            <p id="analyzing-text">Đang phân tích... <span id="percentage">0%</span></p>
+            <p id="analyzing-text">Đang chuẩn đoán... <span id="percentage">0%</span></p>
             <div class="progress-bar">
                 <div class="progress" id="progress"></div>
             </div>
-            <p class="mt-3">Quá trình phân tích có thể tốn thời gian, vui lòng chờ...</p>
+            <p class="mt-3">Quá trình chuẩn đoán có thể tốn thời gian, vui lòng chờ...</p>
             <button id="cancel-button" class="btn btn-danger mt-3">Hủy</button>
         </div>
     </div>
@@ -40,7 +40,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/history">Lịch sử huấn luyện</a>
+                        <a class="nav-link" href="/history">Lịch sử chuẩn đoán</a>
                     </li>
                     <li class="nav-item">
                         <button id="theme-toggle" class="btn nav-link"><i class="fas fa-moon"></i></button>
@@ -176,7 +176,7 @@
                 </div>
             </div>
             <div class="button-container mt-3">
-                <button type="submit" class="btn btn-grad">Phân tích</button>
+                <button type="submit" class="btn btn-grad">Chuẩn đoán</button>
             </div>
         </form>
 
@@ -184,35 +184,6 @@
         <div id="result" class="result">
             <h2>Kết quả phân tích</h2>
             <p id="result-text"></p>
-            <div id="metrics-table" style="display: none;">
-                <h4>Thông số hiệu suất</h4>
-                <table class="table table-dark">
-                    <thead>
-                        <tr>
-                            <th>Chỉ số</th>
-                            <th>Giá trị</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Accuracy</td>
-                            <td id="accuracy">-</td>
-                        </tr>
-                        <tr>
-                            <td>Precision</td>
-                            <td id="precision">-</td>
-                        </tr>
-                        <tr>
-                            <td>Recall</td>
-                            <td id="recall">-</td>
-                        </tr>
-                        <tr>
-                            <td>F1 Score</td>
-                            <td id="f1-score">-</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
         </div>
 
         <!-- Error -->
