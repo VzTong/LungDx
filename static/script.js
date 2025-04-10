@@ -185,6 +185,10 @@ if (document.getElementById('upload-form')) {
                 ? 'Không phát hiện bệnh phổi'
                 : `Phát hiện bệnh: ${data.result} (Độ tin cậy: ${data.confidence.toFixed(2)}%)`;
 
+            // Thêm class để định dạng màu sắc
+            resultDiv.classList.remove('result-healthy', 'result-disease');
+            resultDiv.classList.add(isHealthy ? 'result-healthy' : 'result-disease');
+
             resultDiv.style.display = 'block';
             errorDiv.style.display = 'none';
         }
