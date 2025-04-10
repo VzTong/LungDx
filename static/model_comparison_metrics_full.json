@@ -8,7 +8,7 @@
     ],
     "per_class_comparison": [
         {
-            "class": "Normal",
+            "class": "Normal (Bình thường)",
             "cnn_precision": 0.8997613365155132,
             "resnet_precision": 0.9113300492610837,
             "precision_diff": 0.011568712745570586,
@@ -23,7 +23,7 @@
             "auc_diff": -0.0031898779020406165
         },
         {
-            "class": "Bacterial Pneumonia",
+            "class": "Bacterial Pneumonia (Viêm phổi do vi khuẩn)",
             "cnn_precision": 0.7494305239179955,
             "resnet_precision": 0.7230046948356808,
             "precision_diff": -0.026425829082314722,
@@ -38,7 +38,7 @@
             "auc_diff": -0.013528315684156689
         },
         {
-            "class": "Corona Virus Disease",
+            "class": "Corona Virus Disease (Virus Corona)",
             "cnn_precision": 0.9720101781170484,
             "resnet_precision": 0.9591836734693877,
             "precision_diff": -0.012826504647660664,
@@ -53,7 +53,7 @@
             "auc_diff": -0.004112214248184642
         },
         {
-            "class": "Tuberculosis",
+            "class": "Tuberculosis (Lao phổi)",
             "cnn_precision": 0.975669099756691,
             "resnet_precision": 0.9663461538461539,
             "precision_diff": -0.009322945910537173,
@@ -68,7 +68,7 @@
             "auc_diff": -0.0015581990371906773
         },
         {
-            "class": "Viral Pneumonia",
+            "class": "Viral Pneumonia (Viêm phổi do virus)",
             "cnn_precision": 0.7548209366391184,
             "resnet_precision": 0.7038961038961039,
             "precision_diff": -0.050924832743014514,
