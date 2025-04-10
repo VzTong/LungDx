@@ -13,8 +13,16 @@ import cv2
 from datetime import datetime
 import json
 import re
-from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
-from tensorflow.keras.saving import register_keras_serializable
+
+# Sử dụng các metrics từ scikit-learn để đánh giá mô hình
+import sklearn
+precision_score = sklearn.metrics.precision_score
+recall_score = sklearn.metrics.recall_score
+f1_score = sklearn.metrics.f1_score
+accuracy_score = sklearn.metrics.accuracy_score
+
+# Sử dụng decorator từ Keras để đăng ký hàm tùy chỉnh (đã sửa cho Keras 3)
+from keras.saving import register_keras_serializable
 
 # Định nghĩa và đăng ký hàm grayscale_to_rgb
 @register_keras_serializable()
@@ -353,7 +361,7 @@ def analyze_image(image_path: str, model_name: str) -> tuple:
 
         return result, confidence, original_image
     except Exception as e:
-        error_msg = f"Lỗi phân tích: {str(e)}"
+        error_msg = f"Lỗi chuẩn đoán: {str(e)}"
         print(error_msg)
         socketio.emit('error', {'message': error_msg})
         raise
@@ -381,18 +389,34 @@ def uploaded_file(filename):
 def delete_history(index):
     global history
     try:
-        if 0 <= index < len(history):
-            entry = history[index]
-            if entry.get('original_image'):
-                image_path = os.path.join(app.config['UPLOAD_FOLDER'], entry['original_image'].split('/')[-1])
-                if os.path.exists(image_path):
-                    os.remove(image_path)
-                    print(f"Đã xóa file ảnh: {image_path}")
-                else:
-                    print(f"File ảnh không tồn tại: {image_path}")
-            history.pop(index)
+        # Group entries by image and result to match the frontend grouping
+        grouped_entries = {}
+        for i, entry in enumerate(history):
+            key = entry['original_image'] + '|' + entry['result']
+            if key not in grouped_entries:
+                grouped_entries[key] = []
+            grouped_entries[key].append(i)
+
+        # Get the group corresponding to the index
+        group_keys = list(grouped_entries.keys())
+        if 0 <= index < len(group_keys):
+            group_key = group_keys[index]
+            group_indices = grouped_entries[group_key]
+
+            # Delete all entries in the group
+            for group_index in sorted(group_indices, reverse=True):
+                entry = history[group_index]
+                if entry.get('original_image'):
+                    image_path = os.path.join(app.config['UPLOAD_FOLDER'], entry['original_image'].split('/')[-1])
+                    if os.path.exists(image_path):
+                        os.remove(image_path)
+                        print(f"Đã xóa file ảnh: {image_path}")
+                    else:
+                        print(f"File ảnh không tồn tại: {image_path}")
+                history.pop(group_index)
+
             save_history(history)
-            return jsonify({'message': 'Đã xóa mục lịch sử thành công'}), 200
+            return jsonify({'message': 'Đã xóa nhóm lịch sử thành công'}), 200
         else:
             return jsonify({'error': 'Chỉ số không hợp lệ'}), 400
     except Exception as e:
@@ -444,7 +468,7 @@ def handle_cancel_analysis():
                     os.unlink(file_path)
             except Exception as e:
                 print(f"Lỗi xóa tệp: {e}")
-        emit('analysis_cancelled', {'message': 'Đã hủy phân tích'})
+        emit('analysis_cancelled', {'message': 'Đã hủy chuẩn đoán'})
     except Exception as e:
         print(f"Lỗi hủy: {e}")
 
