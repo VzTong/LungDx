@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch sử phân tích - Lung Diagnosis</title>
+    <title>Lịch sử chuẩn đoán - Lung Diagnosis</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -29,7 +29,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/history">Lịch sử phân tích</a>
+                        <a class="nav-link" href="/history">Lịch sử chuẩn đoán</a>
                     </li>
                     <li class="nav-item">
                         <button id="theme-toggle" class="btn nav-link"><i class="fas fa-moon"></i></button>
@@ -40,7 +40,7 @@
     </nav>
 
     <div class="container mt-5 pt-5">
-        <h1 class="text-center mb-4">Lịch sử phân tích</h1>
+        <h1 class="text-center mb-4">Lịch sử chuẩn đoán</h1>
 
         <!-- History Entries -->
         <div id="history-entries" class="history-entries">
@@ -57,167 +57,171 @@
             {% for key, entries in grouped_entries.items() %}
             {% set first_entry = entries[0] %}
             <div class="history-entry" data-id="{{ loop.index0 }}">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h3 class="text-center mb-0">Phân tích trên ảnh</h3>
-                    <button class="btn btn-danger btn-sm delete-entry" data-id="{{ loop.index0 }}">Xóa</button>
-                </div>
-                <table class="history-table mt-3">
-                    <tr>
-                        <th>Kết quả</th>
-                        <td class="{{ 'result-healthy' if 'Normal' in first_entry.result else 'result-disease' }}">
-                            {{ first_entry.result }} (Độ tin cậy:
-                            {% for entry in entries %}
-                                {{ '%0.2f'|format(entry.confidence) }}% ({{ entry.model }})
-                                {% if not loop.last %}, {% endif %}
-                            {% endfor %})
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Thời gian</th>
-                        <td>
-                            <ul class="timestamp-list">
-                                {% for entry in entries %}
-                                <li>{{ entry.timestamp }} (Mô hình: {{ entry.model }})</li>
-                                {% endfor %}
-                            </ul>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Ảnh đầu vào</th>
-                        <td>
-                            {% if first_entry.original_image %}
-                            <div class="image-container">
-                                <a href="{{ url_for('uploaded_file', filename=first_entry.original_image.split('/')[-1]) }}"
-                                    class="image-popup">
-                                    <img src="{{ url_for('uploaded_file', filename=first_entry.original_image.split('/')[-1]) }}"
-                                        alt="Ảnh đầu vào" class="history-image img-fluid" loading="lazy">
-                                </a>
-                            </div>
-                            {% else %}
-                            <p>Không có hình ảnh</p>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Hiệu năng</th>
-                        <td>
-                            <ul class="details-list">
-                                {% for entry in entries %}
-                                <li><strong>{{ entry.model }}:</strong>
-                                    <ul class="sub-details">
-                                        {% for key, value in entry.performance.items() %}
-                                        <li>{{ key }}: {{ value }}</li>
+                <div class="result-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="result-header"><i class="fas fa-stethoscope"></i> Chuẩn đoán trên ảnh</h3>
+                        <button class="btn btn-danger btn-sm delete-entry" data-id="{{ loop.index0 }}">Xóa</button>
+                    </div>
+                    <div class="result-content">
+                        <table class="history-table mt-3">
+                            <tr>
+                                <th>Kết quả</th>
+                                <td class="{{ 'result-healthy' if 'Normal' in first_entry.result else 'result-disease' }}">
+                                    {{ first_entry.result }} (Độ tin cậy:
+                                    {% for entry in entries %}
+                                        {{ '%0.2f'|format(entry.confidence) }}% ({{ entry.model }})
+                                        {% if not loop.last %}, {% endif %}
+                                    {% endfor %})
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Thời gian</th>
+                                <td>
+                                    <ul class="timestamp-list">
+                                        {% for entry in entries %}
+                                        <li>{{ entry.timestamp }} (Mô hình: {{ entry.model }})</li>
                                         {% endfor %}
                                     </ul>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </td>
-                    </tr>
-                </table>
-
-                <!-- Thêm nút toggle và bảng so sánh từ JSON -->
-                {% if comparison_data %}
-                <button class="btn btn-info btn-sm toggle-details" data-id="{{ loop.index0 }}">Xem so sánh mô hình</button>
-                <div class="details-section" id="details-{{ loop.index0 }}" style="display: none;">
-                    <div class="comparison-section mt-3">
-                        <h4>So sánh hiệu suất giữa CNN và ResNet50:</h4>
-                        <table class="comparison-table table table-dark">
-                            <thead>
-                                <tr>
-                                    <th>Bệnh</th>
-                                    <th>CNN Prec.</th>
-                                    <th>ResNet Prec.</th>
-                                    <th>Prec. Diff</th>
-                                    <th>CNN Recall</th>
-                                    <th>ResNet Recall</th>
-                                    <th>Recall Diff</th>
-                                    <th>CNN F1</th>
-                                    <th>ResNet F1</th>
-                                    <th>F1 Diff</th>
-                                    <th>CNN AUC</th>
-                                    <th>ResNet AUC</th>
-                                    <th>AUC Diff</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for comp in comparison_data.per_class_comparison %}
-                                <tr>
-                                    <td>{{ comp.class }}</td>
-                                    <td>{{ '%0.1f'|format(comp.cnn_precision * 100) }}%</td>
-                                    <td>{{ '%0.1f'|format(comp.resnet_precision * 100) }}%</td>
-                                    <td data-diff="{{ '%0.1f'|format(comp.precision_diff * 100) }}">{{
-                                        '%0.1f'|format(comp.precision_diff * 100) }}%</td>
-                                    <td>{{ '%0.1f'|format(comp.cnn_recall * 100) }}%</td>
-                                    <td>{{ '%0.1f'|format(comp.resnet_recall * 100) }}%</td>
-                                    <td data-diff="{{ '%0.1f'|format(comp.recall_diff * 100) }}">{{
-                                        '%0.1f'|format(comp.recall_diff * 100) }}%</td>
-                                    <td>{{ '%0.1f'|format(comp.cnn_f1 * 100) }}%</td>
-                                    <td>{{ '%0.1f'|format(comp.resnet_f1 * 100) }}%</td>
-                                    <td data-diff="{{ '%0.1f'|format(comp.f1_diff * 100) }}">{{
-                                        '%0.1f'|format(comp.f1_diff * 100) }}%</td>
-                                    <td>{{ '%0.1f'|format(comp.cnn_auc * 100) }}%</td>
-                                    <td>{{ '%0.1f'|format(comp.resnet_auc * 100) }}%</td>
-                                    <td data-diff="{{ '%0.1f'|format(comp.auc_diff * 100) }}">{{
-                                        '%0.1f'|format(comp.auc_diff * 100) }}%</td>
-                                </tr>
-                                {% endfor %}
-                                <tr>
-                                    <td>Overall</td>
-                                    <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.cnn_precision * 100) }}%</td>
-                                    <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.resnet_precision * 100) }}%</td>
-                                    <td data-diff="{{ '%0.1f'|format(comparison_data.weighted_comparison.precision_diff * 100) }}">
-                                        {{ '%0.1f'|format(comparison_data.weighted_comparison.precision_diff * 100) }}%</td>
-                                    <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.cnn_recall * 100) }}%</td>
-                                    <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.resnet_recall * 100) }}%</td>
-                                    <td data-diff="{{ '%0.1f'|format(comparison_data.weighted_comparison.recall_diff * 100) }}">
-                                        {{ '%0.1f'|format(comparison_data.weighted_comparison.recall_diff * 100) }}%</td>
-                                    <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.cnn_f1 * 100) }}%</td>
-                                    <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.resnet_f1 * 100) }}%</td>
-                                    <td data-diff="{{ '%0.1f'|format(comparison_data.weighted_comparison.f1_diff * 100) }}">
-                                        {{ '%0.1f'|format(comparison_data.weighted_comparison.f1_diff * 100) }}%</td>
-                                    <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.cnn_auc * 100) }}%</td>
-                                    <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.resnet_auc * 100) }}%</td>
-                                    <td data-diff="{{ '%0.1f'|format(comparison_data.weighted_comparison.auc_diff * 100) }}">
-                                        {{ '%0.1f'|format(comparison_data.weighted_comparison.auc_diff * 100) }}%</td>
-                                </tr>
-                            </tbody>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Ảnh đầu vào</th>
+                                <td>
+                                    {% if first_entry.original_image %}
+                                    <div class="image-container">
+                                        <a href="{{ url_for('uploaded_file', filename=first_entry.original_image.split('/')[-1]) }}"
+                                            class="image-popup">
+                                            <img src="{{ url_for('uploaded_file', filename=first_entry.original_image.split('/')[-1]) }}"
+                                                alt="Ảnh đầu vào" class="history-image img-fluid" loading="lazy">
+                                        </a>
+                                    </div>
+                                    {% else %}
+                                    <p>Không có hình ảnh</p>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Hiệu năng</th>
+                                <td>
+                                    <ul class="metrics-list">
+                                        {% for entry in entries %}
+                                        <li><strong>{{ entry.model }}:</strong>
+                                            <ul class="sub-details">
+                                                {% for key, value in entry.performance.items() %}
+                                                <li>{{ key }}: {{ value }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </td>
+                            </tr>
                         </table>
+                    </div>
 
-                        <!-- Phần chú thích -->
-                        <div class="notes-section mt-3">
-                            <h5>Ghi chú:</h5>
-                            <ul class="notes-list">
-                                <li>'Prec.' (Precision): Độ chính xác khi mô hình dự đoán một bệnh là đúng.</li>
-                                <li>'Recall': Khả năng mô hình phát hiện đúng tất cả các trường hợp của một bệnh.</li>
-                                <li>'F1': Trung bình hài hòa giữa Prec. và Recall, đánh giá hiệu suất tổng quát.</li>
-                                <li>'AUC': Đo lường khả năng phân biệt giữa các lớp, càng cao càng tốt.</li>
-                                <li>'Diff' (Chênh lệch): Giá trị dương nghĩa là ResNet50 tốt hơn CNN, âm nghĩa là CNN tốt hơn.</li>
-                                <li>'Overall': Hiệu suất trung bình trên tất cả các bệnh.</li>
-                            </ul>
-                        </div>
+                    <!-- Thêm nút toggle và bảng so sánh từ JSON -->
+                    {% if comparison_data %}
+                    <button class="btn btn-info btn-sm toggle-details" data-id="{{ loop.index0 }}">Xem so sánh mô hình</button>
+                    <div class="details-section" id="details-{{ loop.index0 }}" style="display: none;">
+                        <div class="comparison-section mt-3">
+                            <h4>So sánh hiệu suất giữa CNN và ResNet50:</h4>
+                            <table class="comparison-table table table-dark">
+                                <thead>
+                                    <tr>
+                                        <th>Bệnh</th>
+                                        <th>CNN Prec.</th>
+                                        <th>ResNet Prec.</th>
+                                        <th>Prec. Diff</th>
+                                        <th>CNN Recall</th>
+                                        <th>ResNet Recall</th>
+                                        <th>Recall Diff</th>
+                                        <th>CNN F1</th>
+                                        <th>ResNet F1</th>
+                                        <th>F1 Diff</th>
+                                        <th>CNN AUC</th>
+                                        <th>ResNet AUC</th>
+                                        <th>AUC Diff</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for comp in comparison_data.per_class_comparison %}
+                                    <tr>
+                                        <td>{{ comp.class }}</td>
+                                        <td>{{ '%0.1f'|format(comp.cnn_precision * 100) }}%</td>
+                                        <td>{{ '%0.1f'|format(comp.resnet_precision * 100) }}%</td>
+                                        <td data-diff="{{ '%0.1f'|format(comp.precision_diff * 100) }}">{{
+                                            '%0.1f'|format(comp.precision_diff * 100) }}%</td>
+                                        <td>{{ '%0.1f'|format(comp.cnn_recall * 100) }}%</td>
+                                        <td>{{ '%0.1f'|format(comp.resnet_recall * 100) }}%</td>
+                                        <td data-diff="{{ '%0.1f'|format(comp.recall_diff * 100) }}">{{
+                                            '%0.1f'|format(comp.recall_diff * 100) }}%</td>
+                                        <td>{{ '%0.1f'|format(comp.cnn_f1 * 100) }}%</td>
+                                        <td>{{ '%0.1f'|format(comp.resnet_f1 * 100) }}%</td>
+                                        <td data-diff="{{ '%0.1f'|format(comp.f1_diff * 100) }}">{{
+                                            '%0.1f'|format(comp.f1_diff * 100) }}%</td>
+                                        <td>{{ '%0.1f'|format(comp.cnn_auc * 100) }}%</td>
+                                        <td>{{ '%0.1f'|format(comp.resnet_auc * 100) }}%</td>
+                                        <td data-diff="{{ '%0.1f'|format(comp.auc_diff * 100) }}">{{
+                                            '%0.1f'|format(comp.auc_diff * 100) }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr>
+                                        <td>Overall</td>
+                                        <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.cnn_precision * 100) }}%</td>
+                                        <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.resnet_precision * 100) }}%</td>
+                                        <td data-diff="{{ '%0.1f'|format(comparison_data.weighted_comparison.precision_diff * 100) }}">
+                                            {{ '%0.1f'|format(comparison_data.weighted_comparison.precision_diff * 100) }}%</td>
+                                        <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.cnn_recall * 100) }}%</td>
+                                        <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.resnet_recall * 100) }}%</td>
+                                        <td data-diff="{{ '%0.1f'|format(comparison_data.weighted_comparison.recall_diff * 100) }}">
+                                            {{ '%0.1f'|format(comparison_data.weighted_comparison.recall_diff * 100) }}%</td>
+                                        <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.cnn_f1 * 100) }}%</td>
+                                        <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.resnet_f1 * 100) }}%</td>
+                                        <td data-diff="{{ '%0.1f'|format(comparison_data.weighted_comparison.f1_diff * 100) }}">
+                                            {{ '%0.1f'|format(comparison_data.weighted_comparison.f1_diff * 100) }}%</td>
+                                        <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.cnn_auc * 100) }}%</td>
+                                        <td>{{ '%0.1f'|format(comparison_data.weighted_comparison.resnet_auc * 100) }}%</td>
+                                        <td data-diff="{{ '%0.1f'|format(comparison_data.weighted_comparison.auc_diff * 100) }}">
+                                            {{ '%0.1f'|format(comparison_data.weighted_comparison.auc_diff * 100) }}%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
 
-                        <!-- Phần đánh giá -->
-                        <div class="evaluation-section mt-3">
-                            <h5>Đánh giá mô hình đề xuất:</h5>
-                            {% set overall = comparison_data.weighted_comparison %}
-                            {% if overall.resnet_f1 > overall.cnn_f1 %}
-                            <p><strong>Mô hình đề xuất:</strong> ResNet50</p>
-                            <p><strong>Lý do:</strong> ResNet50 có hiệu suất tổng quát tốt hơn (F1: {{
-                                '%0.1f'|format(overall.resnet_f1 * 100) }}% so với {{ '%0.1f'|format(overall.cnn_f1 * 100) }}% của CNN), đặc biệt trong việc cân bằng giữa độ chính xác (Precision) và khả năng phát hiện (Recall).</p>
-                            {% elif overall.cnn_f1 > overall.resnet_f1 %}
-                            <p><strong>Mô hình đề xuất:</strong> CNN</p>
-                            <p><strong>Lý do:</strong> CNN có hiệu suất tổng quát tốt hơn (F1: {{
-                                '%0.1f'|format(overall.cnn_f1 * 100) }}% so với {{ '%0.1f'|format(overall.resnet_f1 * 100) }}% của ResNet50), phù hợp hơn với dữ liệu hiện tại.</p>
-                            {% else %}
-                            <p><strong>Mô hình đề xuất:</strong> Cả hai (CNN hoặc ResNet50)</p>
-                            <p><strong>Lý do:</strong> Cả hai mô hình có hiệu suất tổng quát tương đương (F1: {{
-                                '%0.1f'|format(overall.cnn_f1 * 100) }}%), nên có thể chọn dựa trên yêu cầu cụ thể (ví dụ: ưu tiên Precision hay Recall).</p>
-                            {% endif %}
+                            <!-- Phần chú thích -->
+                            <div class="notes-section mt-3">
+                                <h5>Ghi chú:</h5>
+                                <ul class="notes-list">
+                                    <li>'Prec.' (Precision): Độ chính xác khi mô hình dự đoán một bệnh là đúng.</li>
+                                    <li>'Recall': Khả năng mô hình phát hiện đúng tất cả các trường hợp của một bệnh.</li>
+                                    <li>'F1': Trung bình hài hòa giữa Prec. và Recall, đánh giá hiệu suất tổng quát.</li>
+                                    <li>'AUC': Đo lường khả năng phân biệt giữa các lớp, càng cao càng tốt.</li>
+                                    <li>'Diff' (Chênh lệch): Giá trị dương nghĩa là ResNet50 tốt hơn CNN, âm nghĩa là CNN tốt hơn.</li>
+                                    <li>'Overall': Hiệu suất trung bình trên tất cả các bệnh.</li>
+                                </ul>
+                            </div>
+
+                            <!-- Phần đánh giá -->
+                            <div class="evaluation-section mt-3">
+                                <h5>Đánh giá mô hình đề xuất:</h5>
+                                {% set overall = comparison_data.weighted_comparison %}
+                                {% if overall.resnet_f1 > overall.cnn_f1 %}
+                                <p><strong>Mô hình đề xuất:</strong> ResNet50</p>
+                                <p><strong>Lý do:</strong> ResNet50 có hiệu suất tổng quát tốt hơn (F1: {{
+                                    '%0.1f'|format(overall.resnet_f1 * 100) }}% so với {{ '%0.1f'|format(overall.cnn_f1 * 100) }}% của CNN), đặc biệt trong việc cân bằng giữa độ chính xác (Precision) và khả năng phát hiện (Recall).</p>
+                                {% elif overall.cnn_f1 > overall.resnet_f1 %}
+                                <p><strong>Mô hình đề xuất:</strong> CNN</p>
+                                <p><strong>Lý do:</strong> CNN có hiệu suất tổng quát tốt hơn (F1: {{
+                                    '%0.1f'|format(overall.cnn_f1 * 100) }}% so với {{ '%0.1f'|format(overall.resnet_f1 * 100) }}% của ResNet50), phù hợp hơn với dữ liệu hiện tại.</p>
+                                {% else %}
+                                <p><strong>Mô hình đề xuất:</strong> Cả hai (CNN hoặc ResNet50)</p>
+                                <p><strong>Lý do:</strong> Cả hai mô hình có hiệu suất tổng quát tương đương (F1: {{
+                                    '%0.1f'|format(overall.cnn_f1 * 100) }}%), nên có thể chọn dựa trên yêu cầu cụ thể (ví dụ: ưu tiên Precision hay Recall).</p>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
             {% endfor %}
             {% else %}
