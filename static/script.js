@@ -170,11 +170,6 @@ if (document.getElementById('upload-form')) {
         const errorDiv = document.getElementById('error');
         const resultText = document.getElementById('result-text');
         const errorMessage = document.getElementById('error-message');
-        const metricsTable = document.getElementById('metrics-table');
-        const accuracy = document.getElementById('accuracy');
-        const precision = document.getElementById('precision');
-        const recall = document.getElementById('recall');
-        const f1Score = document.getElementById('f1-score');
 
         overlay.style.display = 'none';
         if (fakeProgressInterval) clearInterval(fakeProgressInterval);
@@ -189,16 +184,6 @@ if (document.getElementById('upload-form')) {
             resultText.textContent = isHealthy
                 ? 'Không phát hiện bệnh phổi'
                 : `Phát hiện bệnh: ${data.result} (Độ tin cậy: ${data.confidence.toFixed(2)}%)`;
-
-            if (data.metrics) {
-                accuracy.textContent = `${(data.metrics.accuracy * 100).toFixed(2)}%`;
-                precision.textContent = `${(data.metrics.precision * 100).toFixed(2)}%`;
-                recall.textContent = `${(data.metrics.recall * 100).toFixed(2)}%`;
-                f1Score.textContent = `${(data.metrics.f1_score * 100).toFixed(2)}%`;
-                metricsTable.style.display = 'block';
-            } else {
-                metricsTable.style.display = 'none';
-            }
 
             resultDiv.style.display = 'block';
             errorDiv.style.display = 'none';
