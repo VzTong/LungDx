@@ -1,47 +1,100 @@
+:root {
+    /* Smooth scroll behavior */
+    scroll-behavior: smooth;
+
+    /* Màu mặc định (Dark Mode) */
+    --background-dark: linear-gradient(to left, #2C5364, #203A43, #0F2027);
+    --background-light: linear-gradient(to right, #56B4D3, #348F50);
+    --background-option: #2c5364db;
+    --text-color: #ffffff;
+    --secondary-text: #181e31;
+    --navbar-bg: rgba(15, 32, 39, 0.9);
+    --navbar-scrolled: rgba(15, 32, 39, 0.5);
+    --card-bg: rgba(255, 255, 255, 0.1);
+    --card-border: rgba(255, 255, 255, 0.2);
+    --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --button-bg: linear-gradient(to right, #136a8a 0%, #267871 51%, #136a8a 100%);
+    --button-hover: right center;
+    --progress-bg: linear-gradient(90deg, #28a745, #3498db);
+    --healthy-bg: rgba(40, 167, 69, 0.2);
+    --disease-bg: rgba(220, 53, 69, 0.2);
+    --border-color: #3498db;
+    --hover-border: #2980b9;
+    --upload-bg: rgba(255, 255, 255, 0.1);
+    --light-accent: #3498db;
+    --dark-accent: #2980b9;
+    --table-header-bg: rgba(0, 0, 0, 0.3);
+    --table-cell-bg: rgba(0, 0, 0, 0.15);
+    --comparison-bg: rgba(0, 0, 0, 0.3);
+    --details-bg: rgba(255, 255, 255, 0.05);
+    --notes-bg: rgba(0, 0, 0, 0.2);
+    --evaluation-bg: rgba(0, 0, 0, 0.2);
+    --pagination-bg: rgba(255, 255, 255, 0.1);
+    --pagination-active: #3498db;
+    --pagination-hover: #2980b9;
+    --scroll-top-bg: rgba(19, 106, 138, 0.8);
+    --scroll-top-hover: rgba(19, 106, 138, 1);
+    --result-display: rgba(0, 0, 0, 0.2);
+}
+
+.light-mode {
+    /* Màu cho Light Mode */
+    --background-dark: linear-gradient(to right, #56B4D3, #348F50);
+    --background-light: linear-gradient(to right, #56B4D3, #348F50);
+    --background-option: #348f4fd4;
+    --text-color: #002d52;
+    --secondary-text: #181e31;
+    --navbar-bg: rgba(52, 143, 80, 0.9);
+    --navbar-scrolled: rgba(52, 143, 80, 0.5);
+    --card-bg: rgba(255, 255, 255, 0.2);
+    --card-border: rgba(24, 30, 49, 0.1);
+    --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --button-bg: linear-gradient(to right, #136a8a 0%, #267871 51%, #136a8a 100%);
+    --button-hover: right center;
+    --progress-bg: linear-gradient(90deg, #1a7a3a, #1e5e8f);
+    --healthy-bg: rgba(40, 167, 69, 0.2);
+    --disease-bg: rgba(220, 53, 69, 0.2);
+    --border-color: #1e5e8f;
+    --hover-border: #1a7a3a;
+    --upload-bg: rgba(255, 255, 255, 0.2);
+    --light-accent: #1e5e8f;
+    --dark-accent: #1a7a3a;
+    --table-header-bg: rgba(255, 255, 255, 0.3);
+    --table-cell-bg: rgba(255, 255, 255, 0.1);
+    --comparison-bg: rgba(255, 255, 255, 0.2);
+    --details-bg: rgba(255, 255, 255, 0.2);
+    --notes-bg: rgba(255, 255, 255, 0.2);
+    --evaluation-bg: rgba(255, 255, 255, 0.2);
+    --pagination-bg: rgba(255, 255, 255, 0.2);
+    --pagination-active: #1e5e8f;
+    --pagination-hover: #1a7a3a;
+    --scroll-top-bg: rgb(38, 125, 64);
+    --scroll-top-hover: rgb(30, 95, 49);
+    --result-display: rgba(255, 255, 255, 0.2);
+}
+
 /* Base */
 body {
     transition: background-color 0.3s ease, color 0.3s ease;
     text-align: center;
     font-family: Arial, sans-serif;
-}
-
-/* Dark Mode (mặc định) */
-body.dark-mode {
-    background: #0F2027;
-    background: -webkit-linear-gradient(to left, #2C5364, #203A43, #0F2027);
-    background: linear-gradient(to left, #2C5364, #203A43, #0F2027);
-    color: #ffffff;
-}
-
-/* Light Mode */
-body.light-mode {
-    background: #348F50;
-    background: -webkit-linear-gradient(to right, #56B4D3, #348F50);
-    background: linear-gradient(to right, #56B4D3, #348F50);
-    color: #ffffff;
+    background: var(--background-dark);
+    color: var(--text-color);
 }
 
 /* Navbar */
 .navbar {
-    background: rgba(15, 32, 39, 0.9);
+    background: var(--navbar-bg);
     transition: background 0.3s ease;
 }
 
 .navbar.scrolled {
-    background: rgba(15, 32, 39, 0.5);
-}
-
-body.light-mode .navbar {
-    background: rgba(52, 143, 80, 0.9);
-}
-
-body.light-mode .navbar.scrolled {
-    background: rgba(52, 143, 80, 0.5);
+    background: var(--navbar-scrolled);
 }
 
 .navbar-brand,
 .nav-link {
-    color: #ffffff !important;
+    color: var(--text-color) !important;
 }
 
 /* Container */
@@ -74,15 +127,9 @@ body.light-mode .navbar.scrolled {
     text-align: justify;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-body.dark-mode .model-info {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-body.light-mode .model-info {
-    background: rgba(255, 255, 255, 0.2);
+    box-shadow: var(--shadow);
+    background: var(--upload-bg);
+    color: var(--secondary-text);
 }
 
 /* Loading Screen */
@@ -92,7 +139,7 @@ body.light-mode .model-info {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.8); /* Nền cố định, không thay đổi theo theme */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -102,7 +149,7 @@ body.light-mode .model-info {
 
 .loader {
     border: 8px solid #f3f3f3;
-    border-top: 8px solid #3498db;
+    border-top: 8px solid var(--light-accent);
     border-radius: 50%;
     width: 50px;
     height: 50px;
@@ -115,7 +162,7 @@ body.light-mode .model-info {
 }
 
 #loading p {
-    color: white;
+    color: #ffffff; /* Chữ trắng cố định, không thay đổi theo theme */
     font-size: 1.5em;
     margin-top: 20px;
 }
@@ -139,19 +186,8 @@ body.light-mode .model-info {
     border-radius: 10px;
     text-align: center;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    transition: background 0.3s ease;
-}
-
-body.dark-mode .analyzing-content {
-    background: -webkit-linear-gradient(to left, #2C5364, #203A43, #0F2027);
-    background: linear-gradient(to left, #2C5364, #203A43, #0F2027);
-    color: #ffffff;
-}
-
-body.light-mode .analyzing-content {
-    background: -webkit-linear-gradient(to right, #56B4D3, #348F50);
-    background: linear-gradient(to right, #56B4D3, #348F50);
-    color: #ffffff;
+    background: var(--background-dark);
+    color: var(--text-color);
 }
 
 #analyzing-text {
@@ -180,11 +216,7 @@ body.light-mode .analyzing-content {
     transition: width 0.3s ease-in-out;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(90deg, #28a745, #3498db);
-}
-
-body.light-mode .progress {
-    background: linear-gradient(90deg, #1a7a3a, #1e5e8f);
+    background: var(--progress-bg);
 }
 
 .progress::after {
@@ -209,11 +241,11 @@ body.light-mode .progress {
 
 /* Upload Box */
 .upload-box {
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px dashed #3498db;
+    background: var(--upload-bg);
+    border: 2px dashed var(--border-color);
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
     transition: all 0.3s ease;
     width: 100%;
     max-width: 400px;
@@ -224,28 +256,20 @@ body.light-mode .progress {
     cursor: pointer;
 }
 
-body.light-mode .upload-box {
-    background: rgba(255, 255, 255, 0.2);
-}
-
 .upload-box:hover {
     background: rgba(255, 255, 255, 0.2);
-    border-color: #2980b9;
+    border-color: var(--hover-border);
     transform: scale(1.02);
-}
-
-body.light-mode .upload-box:hover {
-    background: rgba(255, 255, 255, 0.3);
 }
 
 .upload-box.dragover {
     background: rgba(255, 255, 255, 0.3);
-    border-color: #2980b9;
+    border-color: var(--hover-border);
 }
 
 #file-placeholder,
 #file-name {
-    color: #ffffff;
+    color: var(--text-color);
     text-align: center;
     margin-top: 10px;
     word-break: break-word;
@@ -257,24 +281,80 @@ body.light-mode .upload-box:hover {
     max-height: 250px;
     margin-top: 10px;
     border-radius: 5px;
+    border: 2px solid var(--text-color);
 }
 
-/* Model Container */
+/* Model Container và Model Select */
 .model-container {
     width: 100%;
     max-width: 500px;
     margin: 0 auto;
+    position: relative;
 }
 
 .model-select {
-    background: #ffffff;
-    border: none;
     width: 100%;
+    padding: 12px 40px 12px 15px; /* Thêm padding bên phải để tránh che chữ bởi mũi tên */
+    font-size: 1em;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--card-bg), rgba(255, 255, 255, 0.05)); /* Gradient nền đồng bộ */
+    color: var(--text-color); /* Đảm bảo chữ luôn nổi bật */
+    appearance: none; /* Loại bỏ kiểu mặc định của trình duyệt */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+    text-align: center; /* Căn giữa chữ */
+    font-weight: 500; /* Tăng độ đậm để chữ nổi */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Thêm bóng nhẹ để nổi */
+}
+
+/* Đảm bảo chữ trong option luôn hiển thị rõ và đồng bộ nền */
+.model-select option {
+    background: var(--background-option) !important;
+    color: var(--text-color) !important;
+    padding: 10px;
+    text-align: center; /* Căn giữa chữ trong option */
+}
+
+/* Hiệu ứng khi hover vào option */
+.model-select option:hover {
+    appearance: none; /* Loại bỏ kiểu mặc định của trình duyệt */
+    background: var(--hover-border) !important; /* Nền sáng nhẹ khi hover */
+    color: var(--text-color) !important;
+}
+
+/* Hiệu ứng khi focus vào select */
+.model-select:focus {
+    border-color: var(--hover-border) !important;
+    box-shadow: 0 0 8px var(--light-accent) !important; /* Hiệu ứng glow khi focus */
+}
+
+/* Custom arrow cho select */
+.model-container::after {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    font-size: 0.9em;
+    color: var(--text-color);
+    pointer-events: none;
+    transition: color 0.3s ease;
+}
+
+/* Hiệu ứng khi hover vào container */
+.model-container:hover .model-select {
+    background: linear-gradient(90deg, var(--card-bg), rgba(255, 255, 255, 0.1)); /* Tăng độ tương phản khi hover */
+    border-color: var(--hover-border);
+}
+
+.light-mode .model-container:hover::after {
+    color: var(--hover-border);
 }
 
 /* Analyze Button */
 .btn-grad {
-    background-image: linear-gradient(to right, #136a8a 0%, #267871 51%, #136a8a 100%);
+    background-image: var(--button-bg);
     padding: 12px 40px;
     text-align: center;
     text-transform: uppercase;
@@ -287,16 +367,16 @@ body.light-mode .upload-box:hover {
 }
 
 .btn-grad:hover {
-    background-position: right center;
-    color: #fff;
+    background-position: var(--button-hover);
+    color: white;
     text-decoration: none;
 }
 
 /* Theme Toggle Button */
 #theme-toggle {
     z-index: 1001;
-    border: 2px solid #ffffff;
-    color: #ffffff;
+    border: 2px solid var(--text-color);
+    color: var(--text-color);
     background: transparent;
 }
 
@@ -304,71 +384,187 @@ body.light-mode .upload-box:hover {
     background: rgba(255, 255, 255, 0.2);
 }
 
-/* Result Section */
+/* Result Section (Updated) */
 .result {
     display: none;
     margin-top: 20px;
     margin-bottom: 30px;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    color: var(--text-color);
 }
 
-body.light-mode .result {
-    background: rgba(255, 255, 255, 0.2);
+.result-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-#result-text {
-    font-size: 1.2em;
-    margin-bottom: 10px;
+.result-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
 }
 
-#result-image {
-    max-width: 100%;
-    display: block;
-    margin: 0 auto;
+.result-header {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-/* History Entry (History Page) */
+.result-header i {
+    color: var(--light-accent);
+}
+
+.result-content {
+    text-align: left;
+}
+
+.result-text,
+.result-label {
+    text-align: center;
+    font-size: 1.3em;
+    font-weight: 500;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    background: var(--result-display);
+}
+
+.result-healthy .result-text,
+.result-healthy .result-label {
+    background: var(--healthy-bg);
+    color: #28a745 !important;
+}
+
+.result-disease .result-text,
+.result-disease .result-label {
+    background: var(--disease-bg);
+    color: #dc3545 !important;
+}
+
+.light-mode .result-healthy .result-text,
+.light-mode .result-healthy .result-label {
+    color: #1a7a3a;
+}
+
+.light-mode .result-disease .result-text,
+.light-mode .result-disease .result-label {
+    color: #a71d2a;
+}
+
+/* History Entry (Updated to match Result Card style) */
 .history-entry {
     margin-bottom: 20px;
-    padding: 15px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0;
+    background-color: transparent;
+    border: none;
+}
+
+.history-entry .result-card {
+    margin-bottom: 0;
 }
 
 .history-table {
     width: 100%;
     margin-bottom: 15px;
     border-collapse: collapse;
-    color: #fff;
+    color: var(--text-color);
 }
 
-.history-table th, .history-table td {
+.history-table th,
+.history-table td {
     padding: 12px;
     text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid var(--card-border);
     vertical-align: top;
 }
 
 .history-table th {
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: var(--table-header-bg);
     width: 25%;
     font-weight: 600;
 }
 
 .history-table td {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: var(--table-cell-bg);
 }
 
 .result-healthy {
-    color: #28a745; /* Màu xanh cho "Normal" */
+    color: #28a745;
 }
 
 .result-disease {
-    color: #dc3545; /* Màu đỏ cho bệnh lý */
+    color: #dc3545;
+}
+
+.light-mode .result-healthy {
+    color: #1a7a3a;
+}
+
+.light-mode .result-disease {
+    color: #a71d2a;
+}
+
+/* Result Display Section (Added for the snippet) */
+.result-display {
+    padding: 10px;
+    border-radius: 8px;
+    background: var(--result-display);
+    text-align: left;
+    margin-bottom: 5px;
+    color: var(--text-color);
+}
+
+.result-healthy .result-display {
+    background: var(--healthy-bg);
+}
+
+.result-disease .result-display {
+    background: var(--disease-bg);
+}
+
+.result-label {
+    font-size: 1.2em;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-color);
+    background: transparent;
+}
+
+.result-healthy .result-label,
+.result-disease .result-label {
+    color: var(--text-color);
+}
+
+.metrics-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.metrics-list li {
+    margin-bottom: 8px;
+    font-size: 1em;
+    color: var(--text-color);
+}
+
+.metrics-list li strong {
+    color: var(--light-accent);
+}
+
+.confidence-details {
+    color: var(--text-color);
+}
+
+.confidence-details span {
+    text-transform: capitalize;
+    color: var(--light-accent);
+    font-weight: 700;
 }
 
 /* Timestamp List */
@@ -381,155 +577,143 @@ body.light-mode .result {
 .timestamp-list li {
     margin-bottom: 5px;
     font-size: 0.95em;
+    color: var(--text-color);
 }
 
 /* Details Section */
 .details-section {
     margin-top: 15px;
     padding: 10px;
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: var(--details-bg);
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--card-border);
+    color: var(--text-color);
 }
 
 /* Comparison Section */
 .comparison-section {
     margin-top: 20px;
     padding: 15px;
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: var(--comparison-bg);
     border-radius: 8px;
     overflow-x: auto;
+    color: var(--text-color);
+    border: 1px solid var(--card-border);
+}
+
+/* Tùy chỉnh table-dark */
+.table-dark {
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--text-color);
+    --bs-table-border-color: var(--card-border);
+    --bs-table-striped-bg: var(--table-cell-bg);
+    --bs-table-striped-color: var(--text-color);
+    --bs-table-active-bg: rgba(255, 255, 255, 0.05);
+    --bs-table-active-color: var(--text-color);
+    --bs-table-hover-bg: rgba(255, 255, 255, 0.075);
+    --bs-table-hover-color: var(--text-color);
+}
+
+.table-dark th {
+    background-color: var(--table-header-bg);
+    color: var(--text-color);
+    border-color: var(--card-border);
+}
+
+.table-dark td {
+    background-color: var(--table-cell-bg);
+    color: var(--text-color);
+    border-color: var(--card-border);
 }
 
 .comparison-table {
     width: 100%;
     margin-top: 10px;
     border-collapse: collapse;
-    color: #fff;
+    color: var(--text-color);
     font-size: 0.95em;
 }
 
-.comparison-table th, .comparison-table td {
+/* Căn trái cho tiêu đề và văn bản */
+.comparison-table th,
+.comparison-table td:nth-child(1) {
     padding: 10px;
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: left !important; /* Căn trái cho văn bản thông thường */
+    border: 1px solid var(--card-border);
     white-space: nowrap;
 }
 
-.comparison-table th {
-    background-color: rgba(0, 0, 0, 0.4);
-    font-weight: 600;
-}
-
+/* Căn giữa số trong bảng */
 .comparison-table td {
-    background-color: rgba(0, 0, 0, 0.2);
-}
-
-body.light-mode .comparison-table th {
-    background-color: rgba(0, 0, 0, 0.3);
-}
-
-body.light-mode .comparison-table td {
-    background-color: rgba(0, 0, 0, 0.1);
-}
-
-/* Highlight Diff Values */
-.comparison-table td:nth-child(4),
-.comparison-table td:nth-child(7),
-.comparison-table td:nth-child(10),
-.comparison-table td:nth-child(13) {
     font-weight: bold;
+    position: relative;
 }
 
-.comparison-table td:nth-child(4):not(:empty):before,
-.comparison-table td:nth-child(7):not(:empty):before,
-.comparison-table td:nth-child(10):not(:empty):before,
-.comparison-table td:nth-child(13):not(:empty):before {
-    content: '';
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 5px;
-    vertical-align: middle;
+/* Chỉ áp dụng căn giữa cho số, sử dụng span để bọc số */
+.comparison-table td:not(:empty) {
+    text-align: center; /* Căn giữa số */
+}
+
+/* Loại bỏ vòng tròn, chỉ dùng màu chữ để đánh dấu */
+.comparison-table td:nth-child(4):not(:empty) span,
+.comparison-table td:nth-child(7):not(:empty) span,
+.comparison-table td:nth-child(10):not(:empty) span,
+.comparison-table td:nth-child(13):not(:empty) span {
+    display: inline-block; /* Đảm bảo span hoạt động như một khối nội tuyến */
 }
 
 .comparison-table td:nth-child(4):not(:empty)[data-diff^="+"],
 .comparison-table td:nth-child(7):not(:empty)[data-diff^="+"],
-.comparison-table td:nth-child(10):not(:empty)[data-diff^="+"] ,
+.comparison-table td:nth-child(10):not(:empty)[data-diff^="+"],
 .comparison-table td:nth-child(13):not(:empty)[data-diff^="+"] {
-    color: #28a745;
-}
-
-.comparison-table td:nth-child(4):not(:empty)[data-diff^="+"]:before,
-.comparison-table td:nth-child(7):not(:empty)[data-diff^="+"]:before,
-.comparison-table td:nth-child(10):not(:empty)[data-diff^="+"]:before,
-.comparison-table td:nth-child(13):not(:empty)[data-diff^="+"]:before {
-    background-color: #28a745;
+    color: #28a745; /* Màu xanh cho diff dương */
 }
 
 .comparison-table td:nth-child(4):not(:empty)[data-diff^="-"],
 .comparison-table td:nth-child(7):not(:empty)[data-diff^="-"],
 .comparison-table td:nth-child(10):not(:empty)[data-diff^="-"],
 .comparison-table td:nth-child(13):not(:empty)[data-diff^="-"] {
-    color: #dc3545;
+    color: #dc3545; /* Màu đỏ cho diff âm */
 }
 
-.comparison-table td:nth-child(4):not(:empty)[data-diff^="-"]:before,
-.comparison-table td:nth-child(7):not(:empty)[data-diff^="-"]:before,
-.comparison-table td:nth-child(10):not(:empty)[data-diff^="-"]:before,
-.comparison-table td:nth-child(13):not(:empty)[data-diff^="-"]:before {
-    background-color: #dc3545;
+.light-mode .comparison-table td:nth-child(4):not(:empty)[data-diff^=""],
+.light-mode .comparison-table td:nth-child(7):not(:empty)[data-diff^=""],
+.light-mode .comparison-table td:nth-child(10):not(:empty)[data-diff^=""],
+.light-mode .comparison-table td:nth-child(13):not(:empty)[data-diff^=""] {
+    color: #1a7a3a; /* Màu xanh trong light-mode */
+}
+
+.light-mode .comparison-table td:nth-child(4):not(:empty)[data-diff^="-"],
+.light-mode .comparison-table td:nth-child(7):not(:empty)[data-diff^="-"],
+.light-mode .comparison-table td:nth-child(10):not(:empty)[data-diff^="-"],
+.light-mode .comparison-table td:nth-child(13):not(:empty)[data-diff^="-"] {
+    color: #a71d2a; /* Màu đỏ trong light-mode */
 }
 
 /* Notes Section */
 .notes-section {
     margin-top: 15px;
     padding: 10px;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: var(--notes-bg);
     border-radius: 5px;
     text-align: left;
-}
-
-.notes-section h5 {
-    color: #ffffff;
-    margin-bottom: 10px;
-}
-
-.notes-list {
-    list-style-type: disc;
-    padding-left: 20px;
-    margin: 0;
-    color: #ffffff;
-}
-
-.notes-list li {
-    margin-bottom: 5px;
-    font-size: 0.9em;
+    color: var(--text-color);
+    border: 1px solid var(--card-border);
 }
 
 /* Evaluation Section */
 .evaluation-section {
     margin-top: 15px;
     padding: 10px;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: var(--evaluation-bg);
     border-radius: 5px;
     text-align: left;
-}
-
-.evaluation-section h5 {
-    color: #ffffff;
-    margin-bottom: 10px;
-}
-
-.evaluation-section p {
-    margin: 0 0 5px 0;
-    color: #ffffff;
-    font-size: 0.95em;
+    color: var(--text-color);
+    border: 1px solid var(--card-border);
 }
 
 .evaluation-section strong {
-    color: #28a745;
+    color: var(--light-accent);
 }
 
 /* Model Summary Section */
@@ -538,7 +722,7 @@ body.light-mode .comparison-table td {
 }
 
 .model-summary h6 {
-    color: #ffffff;
+    color: var(--text-color);
     margin-bottom: 15px;
 }
 
@@ -546,13 +730,9 @@ body.light-mode .comparison-table td {
 .entry-item {
     margin-bottom: 20px;
     padding: 15px;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--card-bg);
     border-radius: 8px;
-    color: #ffffff;
-}
-
-body.light-mode .entry-item {
-    background-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
 }
 
 .data-table {
@@ -565,24 +745,16 @@ body.light-mode .entry-item {
 .data-table td {
     padding: 10px;
     text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid var(--card-border);
 }
 
 .data-table th {
-    background-color: rgba(0, 0, 0, 0.2);
-}
-
-body.light-mode .data-table th {
-    background-color: rgba(0, 0, 0, 0.1);
-}
-
-body.light-mode .data-table td {
-    border-bottom-color: rgba(0, 0, 0, 0.1);
+    background-color: var(--table-header-bg);
 }
 
 .entry-item h3 {
     margin-top: 0;
-    color: #ffffff;
+    color: var(--text-color);
     font-size: 1.2em;
 }
 
@@ -594,11 +766,13 @@ body.light-mode .data-table td {
 
 .details-list li {
     margin-bottom: 5px;
+    color: var(--text-color);
 }
 
 .sub-details {
     margin-left: 20px;
     list-style-type: disc;
+    color: var(--text-color);
 }
 
 /* Image Section */
@@ -610,7 +784,7 @@ body.light-mode .data-table td {
 .image-popup img {
     max-width: 300px;
     height: auto;
-    border: 2px solid #fff;
+    border: 2px solid var(--text-color);
     border-radius: 5px;
     cursor: pointer;
     transition: transform 0.2s;
@@ -623,51 +797,38 @@ body.light-mode .data-table td {
 /* Card Styles */
 .card {
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-body.dark-mode .card {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-body.light-mode .card {
-    background: rgba(255, 255, 255, 0.2);
+    box-shadow: var(--shadow);
+    background: var(--card-bg);
 }
 
 .card-header {
-    background: rgba(255, 255, 255, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--card-border);
     border-radius: 10px 10px 0 0;
-}
-
-body.light-mode .card-header {
-    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
 }
 
 .card-body {
     background: transparent;
+    color: var(--text-color);
 }
 
 /* Pagination */
 .pagination .page-item .page-link {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
+    background: var(--pagination-bg);
+    color: var(--text-color);
     border: none;
     transition: background 0.3s ease;
 }
 
-body.light-mode .pagination .page-item .page-link {
-    background: rgba(255, 255, 255, 0.2);
-}
-
 .pagination .page-item.active .page-link {
-    background: #3498db;
-    color: #ffffff;
+    background: var(--pagination-active);
+    color: var(--text-color);
 }
 
 .pagination .page-item .page-link:hover {
-    background: #2980b9;
-    color: #ffffff;
+    background: var(--pagination-hover);
+    color: var(--text-color);
 }
 
 /* Scroll to Top Button */
@@ -675,8 +836,8 @@ body.light-mode .pagination .page-item .page-link {
     position: fixed;
     bottom: 30px;
     right: 30px;
-    background: rgba(19, 106, 138, 0.8);
-    color: #ffffff;
+    background: var(--scroll-top-bg);
+    color: var(--text-color);
     border: none;
     border-radius: 50%;
     width: 50px;
@@ -692,15 +853,8 @@ body.light-mode .pagination .page-item .page-link {
 }
 
 #scroll-to-top:hover {
-    background: rgba(19, 106, 138, 1);
-}
-
-body.light-mode #scroll-to-top {
-    background: rgba(52, 143, 80, 0.8);
-}
-
-body.light-mode #scroll-to-top:hover {
-    background: rgba(52, 143, 80, 1);
+    background: var(--scroll-top-hover);
+    color: var(--text-color);
 }
 
 #scroll-to-top.show {
@@ -715,7 +869,8 @@ body.light-mode #scroll-to-top:hover {
         padding-right: 10px;
     }
 
-    .history-table th, .history-table td {
+    .history-table th,
+    .history-table td {
         padding: 10px;
     }
 }
@@ -746,10 +901,11 @@ body.light-mode #scroll-to-top:hover {
     }
 
     .history-entry {
-        padding: 10px;
+        padding: 0;
     }
 
-    .history-table th, .history-table td {
+    .history-table th,
+    .history-table td {
         padding: 8px;
     }
 
@@ -766,15 +922,18 @@ body.light-mode #scroll-to-top:hover {
         min-width: 900px;
     }
 
-    .comparison-table th, .comparison-table td {
+    .comparison-table th,
+    .comparison-table td {
         padding: 8px;
     }
 
-    .notes-section, .evaluation-section {
+    .notes-section,
+    .evaluation-section {
         padding: 8px;
     }
 
-    .notes-list li, .evaluation-section p {
+    .notes-list li,
+    .evaluation-section p {
         font-size: 0.85em;
     }
 
@@ -784,6 +943,14 @@ body.light-mode #scroll-to-top:hover {
 
     .progress-bar {
         width: 200px;
+    }
+
+    .result-header {
+        font-size: 1.3em;
+    }
+
+    .result-text {
+        font-size: 1.1em;
     }
 }
 
@@ -813,10 +980,11 @@ body.light-mode #scroll-to-top:hover {
 
     .history-entry {
         margin-bottom: 15px;
-        padding: 8px;
+        padding: 0;
     }
 
-    .history-table th, .history-table td {
+    .history-table th,
+    .history-table td {
         padding: 6px;
         font-size: 0.9em;
     }
@@ -830,15 +998,18 @@ body.light-mode #scroll-to-top:hover {
         min-width: 800px;
     }
 
-    .comparison-table th, .comparison-table td {
+    .comparison-table th,
+    .comparison-table td {
         padding: 6px;
     }
 
-    .notes-section, .evaluation-section {
+    .notes-section,
+    .evaluation-section {
         padding: 6px;
     }
 
-    .notes-list li, .evaluation-section p {
+    .notes-list li,
+    .evaluation-section p {
         font-size: 0.8em;
     }
 
@@ -860,10 +1031,23 @@ body.light-mode #scroll-to-top:hover {
     .progress-bar {
         width: 180px;
     }
+
+    .result-header {
+        font-size: 1.2em;
+    }
+
+    .result-text {
+        font-size: 1em;
+    }
+
+    .metrics-list li {
+        font-size: 0.9em;
+    }
 }
 
 /* Icon Font Awesome */
 .fas {
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
+    color: var(--text-color);
 }
