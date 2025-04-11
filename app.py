@@ -344,7 +344,7 @@ def analyze_image(image_path: str, model_name: str, source_url: str = None) -> t
         history.append(history_entry)
         save_history(history)
 
-        return result, confidence, f"/uploads/{filename}"
+        return result, confidence, result_vn, f"/uploads/{filename}"  # Trả về cả result_vn
     except Exception as e:
         error_msg = f"Lỗi chuẩn đoán: {str(e)}"
         print(error_msg)
@@ -459,10 +459,11 @@ def analyze():
         else:
             return jsonify({'error': 'Không có tệp hoặc URL được cung cấp'}), 400
 
-        result, confidence, original_image = analyze_image(filepath, model_name, source_url)
+        result, confidence, result_vn, original_image = analyze_image(filepath, model_name, source_url)  # Nhận result_vn
         result_data = {
             'result': result,
             'confidence': confidence,
+            'result_vn': result_vn,  # Thêm result_vn vào dữ liệu gửi
             'original_image': original_image,
         }
         print(f"Dữ liệu gửi qua SocketIO: {result_data}")
