@@ -58,10 +58,14 @@
             <div class="input-container">
                 <div class="upload-box" id="drop-zone">
                     <label class="form-label">
-                        <h3>Chọn ảnh X-quang</h3>
+                        <h3>Chọn ảnh X-quang hoặc nhập URL</h3>
                     </label>
-                    <input type="file" id="file-upload" name="file" accept="image/*" class="form-control d-none"
-                        required>
+                    <!-- Thêm input cho URL -->
+                    <div class="url-input-container" style="margin-bottom: 15px;">
+                        <input type="url" id="url-input" name="url" class="form-control" placeholder="Nhập URL ảnh (ví dụ: https://example.com/image.jpg)">
+                    </div>
+                    <!-- Input chọn file (Xóa required) -->
+                    <input type="file" id="file-upload" name="file" accept="image/*" class="form-control d-none">
                     <div id="file-placeholder"><small><i>Kéo thả ảnh hoặc nhấp để chọn file</i></small></div>
                     <img id="preview-image" src="" alt="Ảnh xem trước" style="display: none;">
                     <div id="file-name" class="file-name"></div>
@@ -73,106 +77,6 @@
                         <option value="{{ model_name }}">{{ model_name }}</option>
                         {% endfor %}
                     </select>
-                    <!-- Model Details -->
-                    <!-- <div id="model-details" class="mt-3">
-                        <div class="card mb-4 ani-item">
-                            <div class="card-header text-white"><strong>Chi tiết mô hình</strong></div>
-                            <div class="card-body text-white">
-                                <div class="accordion accordion-border-box" id="outerModelAccordion">
-                                    {% for model_name, info in models.items() %}
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header" id="outerHeading-{{ loop.index }}">
-                                            <button
-                                                class="accordion-button collapsed d-flex align-items-center justify-content-between"
-                                                type="button" data-bs-toggle="collapse"
-                                                data-bs-target="#outerCollapse-{{ loop.index }}" aria-expanded="false"
-                                                aria-controls="outerCollapse-{{ loop.index }}"
-                                                style="background: rgba(255, 255, 255, 0.1);">
-                                                <span class="model-title text-center">{{ model_name }}</span>
-                                            </button>
-                                        </h2>
-                                        <div id="outerCollapse-{{ loop.index }}" class="accordion-collapse collapse"
-                                            aria-labelledby="outerHeading-{{ loop.index }}"
-                                            data-bs-parent="#outerModelAccordion">
-                                            <div class="accordion-body">
-                                                <div class="entry-item">
-                                                    <h3 class="text-center">Thông tin mô hình: <strong>{{ model_name
-                                                            }}</strong></h3>
-                                                    <table class="data-table">
-                                                        <tr>
-                                                            <th>Mô tả</th>
-                                                            <td>{{ info.description }}</td>
-                                                        </tr>
-                                                        {% for key, value in info.details.items() %}
-                                                        <tr>
-                                                            <th>{{ key }}</th>
-                                                            <td>
-                                                                {% if value is mapping %}
-                                                                <ul class="detail-list text-start">
-                                                                    {% for subkey, subvalue in value.items() recursive
-                                                                    %}
-                                                                    <li>
-                                                                        <strong>{{ subkey }}:</strong>
-                                                                        {% if subvalue is mapping %}
-                                                                        <ul class="detail-list">
-                                                                            {{ loop(subvalue.items()) }}
-                                                                        </ul>
-                                                                        {% else %}
-                                                                        {{ subvalue }}
-                                                                        {% endif %}
-                                                                    </li>
-                                                                    {% endfor %}
-                                                                </ul>
-                                                                {% else %}
-                                                                {{ value }}
-                                                                {% endif %}
-                                                            </td>
-                                                        </tr>
-                                                        {% endfor %}
-                                                    </table>
-                                                    <div class="image-section">
-                                                        <h5 class="text-center">Biểu đồ và kiến trúc mô hình</h5>
-                                                        <div class="image-grid">
-                                                            <div class="image-item">
-                                                                <a href="{{ url_for('static', filename=info.accuracy_plot) }}"
-                                                                    class="image-popup">
-                                                                    <img src="{{ url_for('static', filename=info.accuracy_plot) }}"
-                                                                        alt="Training Plots"
-                                                                        class="img-fluid image-zoom">
-                                                                </a>
-                                                                <p>Training Plots</p>
-                                                            </div>
-                                                            <div class="image-item">
-                                                                <a href="{{ url_for('static', filename=info.confusion_matrix) }}"
-                                                                    class="image-popup">
-                                                                    <img src="{{ url_for('static', filename=info.confusion_matrix) }}"
-                                                                        alt="Confusion Matrix"
-                                                                        class="img-fluid image-zoom">
-                                                                </a>
-                                                                <p>Confusion Matrix</p>
-                                                            </div>
-                                                            {% if info.architecture %}
-                                                            <div class="image-item">
-                                                                <a href="{{ url_for('static', filename=info.architecture) }}"
-                                                                    class="image-popup">
-                                                                    <img src="{{ url_for('static', filename=info.architecture) }}"
-                                                                        alt="Model Architecture"
-                                                                        class="img-fluid image-zoom">
-                                                                </a>
-                                                                <p>Model Architecture</p>
-                                                            </div>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                    </div> -->
                 </div>
             </div>
             <div class="button-container mt-3">
