@@ -232,13 +232,7 @@ def load_and_convert_models():
         except Exception as e:
             print(f"Lỗi khi tải mô hình {model_name} từ {converted_path}: {str(e)}")
 
-def check_model_layers():
-    for model_name in loaded_models:
-        print(f"\nKiến trúc của mô hình {model_name}:")
-        loaded_models[model_name].summary()
-
 load_and_convert_models()
-check_model_layers()
 
 def check_file_extension(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -259,11 +253,11 @@ def preprocess_image(image_path: str) -> tuple:
         if original_image is None:
             raise ValueError(f"Không thể đọc ảnh từ {image_path}")
 
-        display_image = original_image.copy()
+        # display_image = original_image.copy()
         image = tf.convert_to_tensor(original_image, dtype=tf.float32)
         image = tf.expand_dims(image, axis=-1)
 
-        socketio.emit('progress', {'percentage': 20})
+        socketio.emit('progress', {'percentage': 30})
         image = tf.image.resize(image, [224, 224], method='area')
 
         socketio.emit('progress', {'percentage': 30})
@@ -411,6 +405,11 @@ def fetch_image():
             os.remove(filepath)
             return jsonify({'error': 'Định dạng ảnh không được hỗ trợ'}), 400
 
+        # Đảm bảo tiến trình được gửi đầy đủ khi xử lý URL
+        socketio.emit('progress', {'percentage': 30})
+        socketio.emit('progress', {'percentage': 60})
+        socketio.emit('progress', {'percentage': 90})
+
         return jsonify({'filename': filename, 'image_url': f"/uploads/{filename}"}), 200
     except Exception as e:
         return jsonify({'error': f'Lỗi khi tải ảnh: {str(e)}'}), 500
@@ -467,7 +466,7 @@ def delete_history(index):
         # Group entries by image and result to match the frontend grouping
         grouped_entries = {}
         for i, entry in enumerate(history):
-            key = entry['original_image'] + '|' + entry['result']
+            key = entry.get('source_url', entry['original_image'] + '|' + entry['result'])
             if key not in grouped_entries:
                 grouped_entries[key] = []
             grouped_entries[key].append(i)
