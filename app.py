@@ -381,6 +381,19 @@ def fetch_image():
         if not image_url.startswith(('http://', 'https://')):
             return jsonify({'error': 'URL không hợp lệ'}), 400
 
+        global history
+        history = load_history()
+        existing_entry = next((entry for entry in history if entry.get('source_url') == image_url), None)
+
+        if existing_entry:
+            filename = existing_entry['original_image'].split('/')[-1]
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            if os.path.exists(filepath):
+                socketio.emit('progress', {'percentage': 30})
+                socketio.emit('progress', {'percentage': 60})
+                socketio.emit('progress', {'percentage': 90})
+                return jsonify({'filename': filename, 'image_url': f"/uploads/{filename}"}), 200
+
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
