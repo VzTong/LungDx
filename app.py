@@ -13,6 +13,9 @@ import cv2
 from datetime import datetime
 import json
 import re
+import requests
+import uuid
+from urllib.parse import urlparse
 
 # Sử dụng các metrics từ scikit-learn để đánh giá mô hình
 import sklearn
@@ -256,15 +259,12 @@ def preprocess_image(image_path: str) -> tuple:
         if original_image is None:
             raise ValueError(f"Không thể đọc ảnh từ {image_path}")
 
-        print(f"Shape ảnh gốc: {original_image.shape}")
         display_image = original_image.copy()
-
         image = tf.convert_to_tensor(original_image, dtype=tf.float32)
         image = tf.expand_dims(image, axis=-1)
 
         socketio.emit('progress', {'percentage': 20})
         image = tf.image.resize(image, [224, 224], method='area')
-        print(f"Shape sau khi resize: {image.shape}")
 
         socketio.emit('progress', {'percentage': 30})
         mean = tf.reduce_mean(image)
@@ -307,32 +307,23 @@ def preprocess_image(image_path: str) -> tuple:
         image = tf.ensure_shape(image, [224, 224, 1])
         image = tf.expand_dims(image, axis=0)
 
-        socketio.emit('progress', {'percentage': 80})
-        if image.shape != (1, 224, 224, 1):
-            raise ValueError(f"Shape của ảnh sau tiền xử lý không đúng: {image.shape}, cần (1, 224, 224, 1)")
-
-        display_image = cv2.resize(display_image, (224, 224), interpolation=cv2.INTER_AREA)
+        socketio.emit('progress', {'percentage': 70})
+        display_image = cv2.resize(original_image, (224, 224), interpolation=cv2.INTER_AREA)
         return image.numpy(), display_image
     except Exception as e:
         socketio.emit('error', {'message': f"Lỗi tiền xử lý hình ảnh: {str(e)}"})
         raise
 
-def analyze_image(image_path: str, model_name: str) -> tuple:
-    start_time = time.time()
+def analyze_image(image_path: str, model_name: str, source_url: str = None) -> tuple:
     try:
         if model_name not in loaded_models:
             raise ValueError(f"Mô hình {model_name} chưa được tải.")
 
         model = loaded_models[model_name]
-        preprocess_start = time.time()
         processed_image, original_image = preprocess_image(image_path)
-        print(f"Tiền xử lý mất: {time.time() - preprocess_start:.2f} giây")
 
         socketio.emit('progress', {'percentage': 90})
-        predict_start = time.time()
-        processed_image_tensor = tf.convert_to_tensor(processed_image, dtype=tf.float32)
-        prediction = model.predict(processed_image_tensor, verbose=0)
-        print(f"Dự đoán mất: {time.time() - predict_start:.2f} giây")
+        prediction = model.predict(processed_image, verbose=0)
         socketio.emit('progress', {'percentage': 100})
 
         class_index = np.argmax(prediction[0])
@@ -341,13 +332,13 @@ def analyze_image(image_path: str, model_name: str) -> tuple:
         result_vn = class_translations[result]
 
         filename = os.path.basename(image_path)
-
         history_entry = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "result": f"{result} ({result_vn})",
             "confidence": confidence,
             "model": model_name,
             "original_image": f"/uploads/{filename}",
+            "source_url": source_url if source_url else None,
             "input_details": models_info[model_name]["details"]["Đầu vào"],
             "architecture": models_info[model_name]["details"]["Cấu trúc mô hình"],
             "dense_layers": models_info[model_name]["details"]["dense_layers"],
@@ -359,7 +350,7 @@ def analyze_image(image_path: str, model_name: str) -> tuple:
         history.append(history_entry)
         save_history(history)
 
-        return result, confidence, original_image
+        return result, confidence, f"/uploads/{filename}"
     except Exception as e:
         error_msg = f"Lỗi chuẩn đoán: {str(e)}"
         print(error_msg)
@@ -384,6 +375,90 @@ def history_page():
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/fetch_image', methods=['POST'])
+def fetch_image():
+    try:
+        data = request.get_json()
+        if not data or 'url' not in data:
+            return jsonify({'error': 'Không có URL được cung cấp'}), 400
+
+        image_url = data['url']
+        if not image_url.startswith(('http://', 'https://')):
+            return jsonify({'error': 'URL không hợp lệ'}), 400
+
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(image_url, headers=headers, stream=True)
+        if response.status_code != 200:
+            return jsonify({'error': 'Không thể tải ảnh từ URL'}), 400
+
+        content_type = response.headers.get('content-type', '').lower()
+        if not content_type.startswith('image/'):
+            return jsonify({'error': 'URL không dẫn đến một file ảnh'}), 400
+
+        ext_map = {'image/jpeg': '.jpg', 'image/png': '.png', 'image/gif': '.gif'}
+        ext = ext_map.get(content_type, '.jpg')
+        filename = secure_filename(f"{uuid.uuid4().hex}{ext}")
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+        with open(filepath, 'wb') as f:
+            for chunk in response.iter_content(1024):
+                f.write(chunk)
+
+        if not check_file_extension(filename):
+            os.remove(filepath)
+            return jsonify({'error': 'Định dạng ảnh không được hỗ trợ'}), 400
+
+        return jsonify({'filename': filename, 'image_url': f"/uploads/{filename}"}), 200
+    except Exception as e:
+        return jsonify({'error': f'Lỗi khi tải ảnh: {str(e)}'}), 500
+
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    try:
+        print("Dữ liệu request:", request.files, request.form)
+        model_name = request.form.get('model', 'lung_cnn_v1')
+        if model_name not in models_info:
+            return jsonify({'error': 'Mô hình không hợp lệ'}), 400
+
+        if 'file' in request.files and request.files['file'].filename:
+            file = request.files['file']
+            if not check_file_extension(file.filename):
+                return jsonify({'error': 'Định dạng tệp không hợp lệ'}), 400
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            source_url = None
+        elif 'url' in request.form and request.form['url']:
+            url = request.form['url']
+            fetch_response = requests.post(
+                'http://localhost:5000/fetch_image',
+                json={'url': url},
+                headers={'Content-Type': 'application/json'}
+            )
+            fetch_data = fetch_response.json()
+            if 'error' in fetch_data:
+                return jsonify({'error': fetch_data['error']}), 400
+            filename = fetch_data['filename']
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            source_url = url
+        else:
+            return jsonify({'error': 'Không có tệp hoặc URL được cung cấp'}), 400
+
+        result, confidence, original_image = analyze_image(filepath, model_name, source_url)
+        result_data = {
+            'result': result,
+            'confidence': confidence,
+            'original_image': original_image,
+        }
+        print(f"Dữ liệu gửi qua SocketIO: {result_data}")
+        socketio.emit('result', result_data)
+        return jsonify({'filename': filename})
+    except Exception as e:
+        socketio.emit('error', {'message': f'Lỗi xử lý: {str(e)}'})
+        return jsonify({'error': f'Lỗi xử lý: {str(e)}'}), 500
 
 @app.route('/delete_history/<int:index>', methods=['DELETE'])
 def delete_history(index):
@@ -422,52 +497,13 @@ def delete_history(index):
     except Exception as e:
         return jsonify({'error': f'Lỗi khi xóa: {str(e)}'}), 500
 
-@app.route('/analyze', methods=['POST'])
-def analyze():
-    try:
-        print("Dữ liệu request:", request.files)
-        print("Form data:", request.form)
-        if 'file' not in request.files:
-            return jsonify({'error': 'Không có tệp nào được chọn'}), 400
-
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({'error': 'Không có tệp nào được chọn'}), 400
-
-        if not check_file_extension(file.filename):
-            return jsonify({'error': 'Định dạng tệp không hợp lệ'}), 400
-
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
-
-        model_name = request.form.get('model', 'lung_cnn_v1')
-        if model_name not in models_info:
-            return jsonify({'error': 'Mô hình không hợp lệ'}), 400
-
-        result, confidence, original_image = analyze_image(filepath, model_name)
-        result_data = {
-            'result': result,
-            'confidence': confidence,
-            'original_image': f"/uploads/{filename}",
-        }
-        print(f"Dữ liệu gửi qua SocketIO: {result_data}")
-        socketio.emit('result', result_data)
-        return jsonify({'filename': filename})
-    except Exception as e:
-        socketio.emit('error', {'message': f'Lỗi xử lý: {str(e)}'})
-        return jsonify({'error': f'Lỗi xử lý: {str(e)}'}), 500
-
 @socketio.on('cancel_analysis')
 def handle_cancel_analysis():
     try:
         for filename in os.listdir(app.config['UPLOAD_FOLDER']):
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                print(f"Lỗi xóa tệp: {e}")
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
         emit('analysis_cancelled', {'message': 'Đã hủy chuẩn đoán'})
     except Exception as e:
         print(f"Lỗi hủy: {e}")
