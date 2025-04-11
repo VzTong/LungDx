@@ -139,7 +139,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8); /* Nền cố định, không thay đổi theo theme */
+    background: rgba(0, 0, 0, 0.8);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -162,7 +162,7 @@ body {
 }
 
 #loading p {
-    color: #ffffff; /* Chữ trắng cố định, không thay đổi theo theme */
+    color: #ffffff;
     font-size: 1.5em;
     margin-top: 20px;
 }
@@ -284,6 +284,36 @@ body {
     border: 2px solid var(--text-color);
 }
 
+/* URL Input */
+.url-input-container {
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+    margin-bottom: 15px;
+}
+
+#url-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 0.9em;
+    transition: border-color 0.3s ease;
+}
+
+#url-input:focus {
+    border-color: var(--hover-border);
+    outline: none;
+    box-shadow: 0 0 5px var(--light-accent);
+}
+
+#fetch-url-btn {
+    padding: 8px 20px;
+    font-size: 0.9em;
+}
+
 /* Model Container và Model Select */
 .model-container {
     width: 100%;
@@ -294,43 +324,39 @@ body {
 
 .model-select {
     width: 100%;
-    padding: 12px 40px 12px 15px; /* Thêm padding bên phải để tránh che chữ bởi mũi tên */
+    padding: 12px 40px 12px 15px;
     font-size: 1em;
     border: 1px solid var(--border-color);
     border-radius: 10px;
-    background: linear-gradient(90deg, var(--card-bg), rgba(255, 255, 255, 0.05)); /* Gradient nền đồng bộ */
-    color: var(--text-color); /* Đảm bảo chữ luôn nổi bật */
-    appearance: none; /* Loại bỏ kiểu mặc định của trình duyệt */
+    background: linear-gradient(90deg, var(--card-bg), rgba(255, 255, 255, 0.05));
+    color: var(--text-color);
+    appearance: none;
     cursor: pointer;
     transition: all 0.3s ease;
     outline: none;
-    text-align: center; /* Căn giữa chữ */
-    font-weight: 500; /* Tăng độ đậm để chữ nổi */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Thêm bóng nhẹ để nổi */
+    text-align: center;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Đảm bảo chữ trong option luôn hiển thị rõ và đồng bộ nền */
 .model-select option {
     background: var(--background-option) !important;
     color: var(--text-color) !important;
     padding: 10px;
-    text-align: center; /* Căn giữa chữ trong option */
+    text-align: center;
 }
 
-/* Hiệu ứng khi hover vào option */
 .model-select option:hover {
-    appearance: none; /* Loại bỏ kiểu mặc định của trình duyệt */
-    background: var(--hover-border) !important; /* Nền sáng nhẹ khi hover */
+    appearance: none;
+    background: var(--hover-border) !important;
     color: var(--text-color) !important;
 }
 
-/* Hiệu ứng khi focus vào select */
 .model-select:focus {
     border-color: var(--hover-border) !important;
-    box-shadow: 0 0 8px var(--light-accent) !important; /* Hiệu ứng glow khi focus */
+    box-shadow: 0 0 8px var(--light-accent) !important;
 }
 
-/* Custom arrow cho select */
 .model-container::after {
     position: absolute;
     top: 50%;
@@ -342,9 +368,8 @@ body {
     transition: color 0.3s ease;
 }
 
-/* Hiệu ứng khi hover vào container */
 .model-container:hover .model-select {
-    background: linear-gradient(90deg, var(--card-bg), rgba(255, 255, 255, 0.1)); /* Tăng độ tương phản khi hover */
+    background: linear-gradient(90deg, var(--card-bg), rgba(255, 255, 255, 0.1));
     border-color: var(--hover-border);
 }
 
@@ -384,7 +409,7 @@ body {
     background: rgba(255, 255, 255, 0.2);
 }
 
-/* Result Section (Updated) */
+/* Result Section */
 .result {
     display: none;
     margin-top: 20px;
@@ -456,7 +481,7 @@ body {
     color: #a71d2a;
 }
 
-/* History Entry (Updated to match Result Card style) */
+/* History Entry */
 .history-entry {
     margin-bottom: 20px;
     padding: 0;
@@ -509,7 +534,7 @@ body {
     color: #a71d2a;
 }
 
-/* Result Display Section (Added for the snippet) */
+/* Result Display Section */
 .result-display {
     padding: 10px;
     border-radius: 8px;
@@ -634,60 +659,56 @@ body {
     font-size: 0.95em;
 }
 
-/* Căn trái cho tiêu đề và văn bản */
 .comparison-table th,
 .comparison-table td:nth-child(1) {
     padding: 10px;
-    text-align: left !important; /* Căn trái cho văn bản thông thường */
+    text-align: left !important;
     border: 1px solid var(--card-border);
     white-space: nowrap;
 }
 
-/* Căn giữa số trong bảng */
 .comparison-table td {
     font-weight: bold;
     position: relative;
 }
 
-/* Chỉ áp dụng căn giữa cho số, sử dụng span để bọc số */
 .comparison-table td:not(:empty) {
-    text-align: center; /* Căn giữa số */
+    text-align: center;
 }
 
-/* Loại bỏ vòng tròn, chỉ dùng màu chữ để đánh dấu */
 .comparison-table td:nth-child(4):not(:empty) span,
 .comparison-table td:nth-child(7):not(:empty) span,
 .comparison-table td:nth-child(10):not(:empty) span,
 .comparison-table td:nth-child(13):not(:empty) span {
-    display: inline-block; /* Đảm bảo span hoạt động như một khối nội tuyến */
+    display: inline-block;
 }
 
 .comparison-table td:nth-child(4):not(:empty)[data-diff^="+"],
 .comparison-table td:nth-child(7):not(:empty)[data-diff^="+"],
 .comparison-table td:nth-child(10):not(:empty)[data-diff^="+"],
 .comparison-table td:nth-child(13):not(:empty)[data-diff^="+"] {
-    color: #28a745; /* Màu xanh cho diff dương */
+    color: #28a745;
 }
 
 .comparison-table td:nth-child(4):not(:empty)[data-diff^="-"],
 .comparison-table td:nth-child(7):not(:empty)[data-diff^="-"],
 .comparison-table td:nth-child(10):not(:empty)[data-diff^="-"],
 .comparison-table td:nth-child(13):not(:empty)[data-diff^="-"] {
-    color: #dc3545; /* Màu đỏ cho diff âm */
+    color: #dc3545;
 }
 
 .light-mode .comparison-table td:nth-child(4):not(:empty)[data-diff^=""],
 .light-mode .comparison-table td:nth-child(7):not(:empty)[data-diff^=""],
 .light-mode .comparison-table td:nth-child(10):not(:empty)[data-diff^=""],
 .light-mode .comparison-table td:nth-child(13):not(:empty)[data-diff^=""] {
-    color: #1a7a3a; /* Màu xanh trong light-mode */
+    color: #1a7a3a;
 }
 
 .light-mode .comparison-table td:nth-child(4):not(:empty)[data-diff^="-"],
 .light-mode .comparison-table td:nth-child(7):not(:empty)[data-diff^="-"],
 .light-mode .comparison-table td:nth-child(10):not(:empty)[data-diff^="-"],
 .light-mode .comparison-table td:nth-child(13):not(:empty)[data-diff^="-"] {
-    color: #a71d2a; /* Màu đỏ trong light-mode */
+    color: #a71d2a;
 }
 
 /* Notes Section */
