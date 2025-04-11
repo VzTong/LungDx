@@ -268,7 +268,7 @@ if (document.getElementById('upload-form')) {
             const isHealthy = data.result === 'Normal';
             resultText.textContent = isHealthy
                 ? 'Không phát hiện bệnh phổi'
-                : `Phát hiện bệnh: ${data.result} (Độ tin cậy: ${data.confidence.toFixed(2)}%)`;
+                : `Phát hiện bệnh: ${data.result} - ${data.result_vn} (Độ tin cậy: ${data.confidence.toFixed(2)}%)`;
             resultDiv.classList.remove('result-healthy', 'result-disease');
             resultDiv.classList.add(isHealthy ? 'result-healthy' : 'result-disease');
             resultDiv.style.display = 'block';
