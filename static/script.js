@@ -2,22 +2,19 @@ const socket = io();
 let analysisInProgress = false;
 let fakeProgressInterval;
 
-// Theme Toggle
+// Theme Toggle (Dùng class đơn giản hơn)
 const themeToggle = document.getElementById('theme-toggle');
 const body = document.body;
 
 if (themeToggle) {
-    console.log('Theme toggle button found, attaching event listener');
     themeToggle.addEventListener('click', () => {
-        console.log('Theme toggle clicked');
-        body.classList.toggle('dark-mode');
         body.classList.toggle('light-mode');
-        const isDarkMode = body.classList.contains('dark-mode');
-        themeToggle.innerHTML = isDarkMode
-            ? '<i class="fas fa-moon"></i>'
-            : '<i class="fas fa-sun"></i>';
-        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-        console.log('Theme set to:', isDarkMode ? 'dark' : 'light');
+        const isLightMode = body.classList.contains('light-mode');
+        themeToggle.innerHTML = isLightMode
+            ? '<i class="fas fa-moon"></i>' // Chuyển sang dark
+            : '<i class="fas fa-sun"></i>'; // Chuyển sang light
+        localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
+        console.log('Theme set to:', isLightMode ? 'light' : 'dark');
     });
 } else {
     console.error('Theme toggle button not found');
@@ -25,10 +22,13 @@ if (themeToggle) {
 
 // Load Theme from Local Storage
 const savedTheme = localStorage.getItem('theme') || 'dark';
-console.log('Applying theme:', savedTheme);
-body.classList.add(savedTheme + '-mode');
+if (savedTheme === 'light') {
+    body.classList.add('light-mode');
+} else {
+    body.classList.remove('light-mode'); // Đảm bảo dark là mặc định
+}
 if (themeToggle) {
-    themeToggle.innerHTML = body.classList.contains('dark-mode')
+    themeToggle.innerHTML = body.classList.contains('light-mode')
         ? '<i class="fas fa-moon"></i>'
         : '<i class="fas fa-sun"></i>';
 }
