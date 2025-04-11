@@ -66,12 +66,20 @@
                         <table class="history-table mt-3">
                             <tr>
                                 <th>Kết quả</th>
-                                <td class="{{ 'result-healthy' if 'Normal' in first_entry.result else 'result-disease' }}">
-                                    {{ first_entry.result }} (Độ tin cậy:
-                                    {% for entry in entries %}
-                                        {{ '%0.2f'|format(entry.confidence) }}% ({{ entry.model }})
-                                        {% if not loop.last %}, {% endif %}
-                                    {% endfor %})
+                                <td>
+                                    <div class="result-display {{ 'result-healthy' if 'Normal' in first_entry.result else 'result-disease' }}">
+                                        <span class="result-label">{{ first_entry.result }}</span>
+                                        <div class="confidence-details">
+                                            Độ tin cậy:
+                                            {% for entry in entries %}
+                                                {{ '%0.2f'|format(entry.confidence) }}%
+                                                <span>
+                                                    {{ entry.model }}
+                                                    {% if not loop.last %} <br/> {% endif %}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
@@ -121,7 +129,7 @@
 
                     <!-- Thêm nút toggle và bảng so sánh từ JSON -->
                     {% if comparison_data %}
-                    <button class="btn btn-info btn-sm toggle-details" data-id="{{ loop.index0 }}">Xem so sánh mô hình</button>
+                    <button class="btn btn-info btn-sm toggle-details" style="color: #0a332d;" data-id="{{ loop.index0 }}">Xem so sánh mô hình</button>
                     <div class="details-section" id="details-{{ loop.index0 }}" style="display: none;">
                         <div class="comparison-section mt-3">
                             <h4>So sánh hiệu suất giữa CNN và ResNet50:</h4>
@@ -209,8 +217,8 @@
                                 <p><strong>Lý do:</strong> ResNet50 có hiệu suất tổng quát tốt hơn (F1: {{
                                     '%0.1f'|format(overall.resnet_f1 * 100) }}% so với {{ '%0.1f'|format(overall.cnn_f1 * 100) }}% của CNN), đặc biệt trong việc cân bằng giữa độ chính xác (Precision) và khả năng phát hiện (Recall).</p>
                                 {% elif overall.cnn_f1 > overall.resnet_f1 %}
-                                <p><strong>Mô hình đề xuất:</strong> CNN</p>
-                                <p><strong>Lý do:</strong> CNN có hiệu suất tổng quát tốt hơn (F1: {{
+                                <p><strong style="color: #1c8634;">Mô hình đề xuất:</strong> CNN</p>
+                                <p><strong style="color: #1c8634;">Lý do:</strong> CNN có hiệu suất tổng quát tốt hơn (F1: {{
                                     '%0.1f'|format(overall.cnn_f1 * 100) }}% so với {{ '%0.1f'|format(overall.resnet_f1 * 100) }}% của ResNet50), phù hợp hơn với dữ liệu hiện tại.</p>
                                 {% else %}
                                 <p><strong>Mô hình đề xuất:</strong> Cả hai (CNN hoặc ResNet50)</p>
