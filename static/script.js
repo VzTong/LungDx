@@ -2,7 +2,7 @@ const socket = io();
 let analysisInProgress = false;
 let fakeProgressInterval;
 
-// Theme Toggle (Dùng class đơn giản hơn)
+// Theme Toggle
 const themeToggle = document.getElementById('theme-toggle');
 const body = document.body;
 
@@ -11,8 +11,8 @@ if (themeToggle) {
         body.classList.toggle('light-mode');
         const isLightMode = body.classList.contains('light-mode');
         themeToggle.innerHTML = isLightMode
-            ? '<i class="fas fa-moon"></i>' // Chuyển sang dark
-            : '<i class="fas fa-sun"></i>'; // Chuyển sang light
+            ? '<i class="fas fa-moon"></i>'
+            : '<i class="fas fa-sun"></i>';
         localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
         console.log('Theme set to:', isLightMode ? 'light' : 'dark');
     });
@@ -25,7 +25,7 @@ const savedTheme = localStorage.getItem('theme') || 'dark';
 if (savedTheme === 'light') {
     body.classList.add('light-mode');
 } else {
-    body.classList.remove('light-mode'); // Đảm bảo dark là mặc định
+    body.classList.remove('light-mode');
 }
 if (themeToggle) {
     themeToggle.innerHTML = body.classList.contains('light-mode')
@@ -45,13 +45,8 @@ if (scrollToTopBtn) {
     });
 
     scrollToTopBtn.addEventListener('click', () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
-} else {
-    console.error('Scroll to top button not found');
 }
 
 // Navbar Transparency on Scroll
@@ -80,20 +75,99 @@ setTimeout(() => {
     if (loading) loading.style.display = 'none';
 }, 5000);
 
-// Preview Image
-const fileUpload = document.getElementById('file-upload');
-if (fileUpload) {
-    fileUpload.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const preview = document.getElementById('preview-image');
-            preview.src = URL.createObjectURL(file);
-            preview.style.display = 'block';
+// Handle Upload Box Click and Drag & Drop
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-upload');
+const urlInput = document.getElementById('url-input');
+const fileNameDisplay = document.getElementById('file-name');
+const previewImage = document.getElementById('preview-image');
+const filePlaceholder = document.getElementById('file-placeholder');
+
+if (dropZone && fileInput && fileNameDisplay && urlInput && previewImage) {
+    dropZone.addEventListener('click', (e) => {
+        if (e.target !== urlInput) {
+            fileInput.click();
         }
     });
+
+    urlInput.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            fileNameDisplay.textContent = files[0].name;
+            previewImage.src = URL.createObjectURL(files[0]);
+            previewImage.style.display = 'block';
+            filePlaceholder.style.display = 'none';
+            urlInput.value = '';
+        }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            fileNameDisplay.textContent = file.name;
+            previewImage.src = URL.createObjectURL(file);
+            previewImage.style.display = 'block';
+            filePlaceholder.style.display = 'none';
+            urlInput.value = '';
+        } else {
+            fileNameDisplay.textContent = '';
+            previewImage.style.display = 'none';
+            filePlaceholder.style.display = 'block';
+        }
+    });
+
+    urlInput.addEventListener('input', debounce(async () => {
+        const url = urlInput.value.trim();
+        if (url && url.match(/^https?:\/\/.*\.(jpg|jpeg|png)$/i)) {
+            try {
+                const response = await fetch('/fetch_image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url }),
+                });
+                const data = await response.json();
+                if (data.image_url) {
+                    previewImage.src = data.image_url;
+                    previewImage.style.display = 'block';
+                    fileNameDisplay.textContent = 'Ảnh từ URL';
+                    filePlaceholder.style.display = 'none';
+                    fileInput.value = '';
+                } else {
+                    throw new Error(data.error || 'Không thể tải ảnh từ URL');
+                }
+            } catch (error) {
+                console.error('Lỗi tải ảnh từ URL:', error);
+                previewImage.style.display = 'none';
+                fileNameDisplay.textContent = '';
+                filePlaceholder.style.display = 'block';
+                alert(error.message);
+            }
+        } else {
+            previewImage.style.display = 'none';
+            fileNameDisplay.textContent = '';
+            filePlaceholder.style.display = 'block';
+        }
+    }, 500));
 }
 
-// SocketIO for Analysis (Index Page)
+// SocketIO for Analysis
 if (document.getElementById('upload-form')) {
     socket.on('connect', () => {
         console.log('Đã kết nối tới SocketIO server');
@@ -146,7 +220,18 @@ if (document.getElementById('upload-form')) {
         percentageText.textContent = '0%';
 
         analysisInProgress = true;
-        const formData = new FormData(e.target);
+        const formData = new FormData();
+        if (fileInput.files.length > 0) {
+            formData.append('file', fileInput.files[0]);
+        } else if (urlInput.value.trim()) {
+            formData.append('url', urlInput.value.trim());
+        } else {
+            alert('Vui lòng chọn file hoặc nhập URL ảnh.');
+            overlay.style.display = 'none';
+            analysisInProgress = false;
+            return;
+        }
+        formData.append('model', document.getElementById('model-select').value);
 
         fetch('/analyze', {
             method: 'POST',
@@ -184,11 +269,8 @@ if (document.getElementById('upload-form')) {
             resultText.textContent = isHealthy
                 ? 'Không phát hiện bệnh phổi'
                 : `Phát hiện bệnh: ${data.result} (Độ tin cậy: ${data.confidence.toFixed(2)}%)`;
-
-            // Thêm class để định dạng màu sắc
             resultDiv.classList.remove('result-healthy', 'result-disease');
             resultDiv.classList.add(isHealthy ? 'result-healthy' : 'result-disease');
-
             resultDiv.style.display = 'block';
             errorDiv.style.display = 'none';
         }
@@ -219,7 +301,6 @@ if (modelSelect) {
     modelSelect.addEventListener('change', function () {
         const selectedModel = this.value;
         const accordionItems = document.querySelectorAll('#outerModelAccordion .accordion-item');
-
         accordionItems.forEach(item => {
             const modelName = item.querySelector('.model-title').textContent.trim();
             if (modelName === selectedModel) {
@@ -248,7 +329,7 @@ if (modelSelect) {
     });
 }
 
-// History Page Functionality
+// History Page Functionality (Giữ nguyên)
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('history-entries')) {
         console.log('History entries found, initializing pagination, image modal, and delete functionality');
@@ -323,7 +404,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn('No history entries found');
         }
 
-        // Toggle Details Section
         document.querySelectorAll('.toggle-details').forEach(button => {
             button.addEventListener('click', () => {
                 const id = button.getAttribute('data-id');
@@ -338,28 +418,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Image Popup with Magnific Popup
         $('.image-popup').magnificPopup({
             type: 'image',
             closeOnContentClick: true,
             closeBtnInside: false,
             fixedContentPos: true,
             mainClass: 'mfp-no-margins mfp-with-zoom',
-            gallery: {
-                enabled: true,
-                navigateByImgClick: true,
-                preload: [0, 1]
-            },
-            image: {
-                verticalFit: true
-            },
-            zoom: {
-                enabled: true,
-                duration: 300
-            }
+            gallery: { enabled: true, navigateByImgClick: true, preload: [0, 1] },
+            image: { verticalFit: true },
+            zoom: { enabled: true, duration: 300 }
         });
 
-        // Delete History Entry
         const deleteButtons = document.querySelectorAll('.delete-entry');
         if (deleteButtons.length > 0) {
             console.log('Found', deleteButtons.length, 'delete buttons, attaching click events');
@@ -367,32 +436,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.addEventListener('click', () => {
                     const index = parseInt(button.getAttribute('data-id'));
                     if (confirm('Bạn có chắc chắn muốn xóa mục này?')) {
-                        fetch(`/delete_history/${index}`, {
-                            method: 'DELETE'
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.message) {
-                                alert(data.message);
-                                const entry = document.querySelector(`.history-entry[data-id="${index}"]`);
-                                if (entry) {
-                                    entry.remove();
-                                    entries = Array.from(document.querySelectorAll('.history-entry'));
-                                    if (entries.length === 0) {
-                                        historyContainer.innerHTML = '<p class="text-center">Không có dữ liệu lịch sử phân tích.</p>';
-                                    } else {
-                                        sortEntriesByTimestamp();
-                                        showPage(currentPage);
+                        fetch(`/delete_history/${index}`, { method: 'DELETE' })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.message) {
+                                    alert(data.message);
+                                    const entry = document.querySelector(`.history-entry[data-id="${index}"]`);
+                                    if (entry) {
+                                        entry.remove();
+                                        entries = Array.from(document.querySelectorAll('.history-entry'));
+                                        if (entries.length === 0) {
+                                            historyContainer.innerHTML = '<p class="text-center">Không có dữ liệu lịch sử phân tích.</p>';
+                                        } else {
+                                            sortEntriesByTimestamp();
+                                            showPage(currentPage);
+                                        }
                                     }
+                                } else if (data.error) {
+                                    alert('Lỗi: ' + data.error);
                                 }
-                            } else if (data.error) {
-                                alert('Lỗi: ' + data.error);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Lỗi khi xóa:', error);
-                            alert('Lỗi không xác định khi xóa mục lịch sử');
-                        });
+                            })
+                            .catch(error => {
+                                console.error('Lỗi khi xóa:', error);
+                                alert('Lỗi không xác định khi xóa mục lịch sử');
+                            });
                     }
                 });
             });
@@ -400,52 +467,16 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn('No delete buttons found');
         }
     }
-
-    // Handle Upload Box Click and Drag & Drop
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-upload');
-    const fileNameDisplay = document.getElementById('file-name');
-
-    if (dropZone && fileInput && fileNameDisplay) {
-        dropZone.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-
-        dropZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                fileInput.files = files;
-                fileNameDisplay.textContent = files[0].name;
-                const preview = document.getElementById('preview-image');
-                preview.src = URL.createObjectURL(files[0]);
-                preview.style.display = 'block';
-            }
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                fileNameDisplay.textContent = file.name;
-                const preview = document.getElementById('preview-image');
-                preview.src = URL.createObjectURL(file);
-                preview.style.display = 'block';
-            } else {
-                fileNameDisplay.textContent = '';
-            }
-        });
-    } else {
-        console.error('Drop zone, file input, or file name display not found');
-    }
 });
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
