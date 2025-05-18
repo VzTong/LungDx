@@ -18,7 +18,7 @@ import uuid
 from urllib.parse import urlparse
 
 # Sử dụng các metrics từ scikit-learn để đánh giá mô hình
-import sklearn
+import sklearn.metrics
 precision_score = sklearn.metrics.precision_score
 recall_score = sklearn.metrics.recall_score
 f1_score = sklearn.metrics.f1_score
