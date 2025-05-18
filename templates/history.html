@@ -129,7 +129,9 @@
 
                     <!-- Thêm nút toggle và bảng so sánh từ JSON -->
                     {% if comparison_data %}
-                    <button class="btn btn-info btn-sm toggle-details" style="color: #0a332d;" data-id="{{ loop.index0 }}">Xem so sánh mô hình</button>
+                    <button class="btn btn-info btn-sm toggle-details" style="color: #0a332d;" data-id="{{ loop.index0 }}">
+                        Xem so sánh mô hình
+                    </button>
                     <div class="details-section" id="details-{{ loop.index0 }}" style="display: none;">
                         <div class="comparison-section mt-3">
                             <h4>So sánh hiệu suất giữa CNN và ResNet50:</h4>
@@ -155,22 +157,38 @@
                                     {% for comp in comparison_data.per_class_comparison %}
                                     <tr>
                                         <td>{{ comp.class }}</td>
+
                                         <td>{{ '%0.1f'|format(comp.cnn_precision * 100) }}%</td>
+
                                         <td>{{ '%0.1f'|format(comp.resnet_precision * 100) }}%</td>
-                                        <td data-diff="{{ '%0.1f'|format(comp.precision_diff * 100) }}">{{
-                                            '%0.1f'|format(comp.precision_diff * 100) }}%</td>
+
+                                        <td data-diff="{{ '%0.1f'|format(comp.precision_diff * 100) }}">
+                                            {{'%0.1f'|format(comp.precision_diff * 100) }}%
+                                        </td>
+
                                         <td>{{ '%0.1f'|format(comp.cnn_recall * 100) }}%</td>
+
                                         <td>{{ '%0.1f'|format(comp.resnet_recall * 100) }}%</td>
-                                        <td data-diff="{{ '%0.1f'|format(comp.recall_diff * 100) }}">{{
-                                            '%0.1f'|format(comp.recall_diff * 100) }}%</td>
+
+                                        <td data-diff="{{ '%0.1f'|format(comp.recall_diff * 100) }}">
+                                            {{'%0.1f'|format(comp.recall_diff * 100) }}%
+                                        </td>
+
                                         <td>{{ '%0.1f'|format(comp.cnn_f1 * 100) }}%</td>
+
                                         <td>{{ '%0.1f'|format(comp.resnet_f1 * 100) }}%</td>
-                                        <td data-diff="{{ '%0.1f'|format(comp.f1_diff * 100) }}">{{
-                                            '%0.1f'|format(comp.f1_diff * 100) }}%</td>
+
+                                        <td data-diff="{{ '%0.1f'|format(comp.f1_diff * 100) }}">
+                                            {{'%0.1f'|format(comp.f1_diff * 100) }}%
+                                        </td>
+
                                         <td>{{ '%0.1f'|format(comp.cnn_auc * 100) }}%</td>
+
                                         <td>{{ '%0.1f'|format(comp.resnet_auc * 100) }}%</td>
-                                        <td data-diff="{{ '%0.1f'|format(comp.auc_diff * 100) }}">{{
-                                            '%0.1f'|format(comp.auc_diff * 100) }}%</td>
+
+                                        <td data-diff="{{ '%0.1f'|format(comp.auc_diff * 100) }}">
+                                            {{'%0.1f'|format(comp.auc_diff * 100) }}%
+                                        </td>
                                     </tr>
                                     {% endfor %}
                                     <tr>
@@ -208,22 +226,42 @@
                                 </ul>
                             </div>
 
-                            <!-- Phần đánh giá -->
+                            <!-- Phần đánh giá chi tiết -->
                             <div class="evaluation-section mt-3">
                                 <h5>Đánh giá mô hình đề xuất:</h5>
                                 {% set overall = comparison_data.weighted_comparison %}
                                 {% if overall.resnet_f1 > overall.cnn_f1 %}
                                 <p><strong>Mô hình đề xuất:</strong> ResNet50</p>
-                                <p><strong>Lý do:</strong> ResNet50 có hiệu suất tổng quát tốt hơn (F1: {{
-                                    '%0.1f'|format(overall.resnet_f1 * 100) }}% so với {{ '%0.1f'|format(overall.cnn_f1 * 100) }}% của CNN), đặc biệt trong việc cân bằng giữa độ chính xác (Precision) và khả năng phát hiện (Recall).</p>
+                                <p><strong>Lý do:</strong> Dựa trên phân tích tổng quát, ResNet50 vượt trội hơn CNN với F1-score trung bình cao hơn ({{ '%0.1f'|format(overall.resnet_f1 * 100) }}% so với {{ '%0.1f'|format(overall.cnn_f1 * 100) }}% của CNN). Sự khác biệt này cho thấy ResNet50 có khả năng cân bằng tốt hơn giữa Precision (độ chính xác) và Recall (khả năng phát hiện), đặc biệt trong các lớp như "Normal" và "Tuberculosis", nơi ResNet50 cho thấy Precision cao hơn hoặc Recall tương đương. Cụ thể:</p>
+                                <ul class="detailed-reasons">
+                                    <li>Trong lớp "Normal", ResNet50 có Precision cao hơn CNN (91.1% so với 89.9%), dù Recall thấp hơn một chút (91.6% so với 93.3%). Tuy nhiên, sự chênh lệch F1-score là rất nhỏ (-0.3%), cho thấy ResNet50 vẫn duy trì hiệu suất ổn định.</li>
+                                    <li>Đối với các lớp khó hơn như "Bacterial Pneumonia" và "Viral Pneumonia", mặc dù ResNet50 có Precision và Recall thấp hơn CNN (ví dụ: Precision của ResNet50 chỉ đạt 72.3% so với 74.9% của CNN trong "Bacterial Pneumonia"), nhưng hiệu suất tổng quát của ResNet50 vẫn tốt hơn nhờ khả năng xử lý tốt hơn trên các lớp khác.</li>
+                                    <li>Chỉ số AUC tổng quát của ResNet50 (97.1%) cũng gần tương đương với CNN (97.8%), nhưng sự ổn định của ResNet50 trong việc phân biệt các lớp (như trong "Corona Virus Disease" và "Tuberculosis") làm cho nó trở thành lựa chọn ưu việt hơn.</li>
+                                    <li>Chênh lệch F1-score tổng quát (-1.7%) cho thấy ResNet50 có khả năng tổng quát hóa tốt hơn trên toàn bộ tập dữ liệu, đặc biệt phù hợp cho các ứng dụng cần độ tin cậy cao và ổn định.</li>
+                                </ul>
+                                <p>Kết luận, ResNet50 là mô hình đề xuất vì nó cung cấp hiệu suất tổng quát tốt hơn, đặc biệt trong việc duy trì cân bằng giữa các chỉ số và xử lý tốt hơn trên các lớp đa dạng.</p>
+
                                 {% elif overall.cnn_f1 > overall.resnet_f1 %}
                                 <p><strong style="color: #1c8634;">Mô hình đề xuất:</strong> CNN</p>
-                                <p><strong style="color: #1c8634;">Lý do:</strong> CNN có hiệu suất tổng quát tốt hơn (F1: {{
-                                    '%0.1f'|format(overall.cnn_f1 * 100) }}% so với {{ '%0.1f'|format(overall.resnet_f1 * 100) }}% của ResNet50), phù hợp hơn với dữ liệu hiện tại.</p>
+                                <p><strong style="color: #1c8634;">Lý do:</strong> Dựa trên phân tích tổng quát, CNN vượt trội hơn ResNet50 với F1-score trung bình cao hơn ({{ '%0.1f'|format(overall.cnn_f1 * 100) }}% so với {{ '%0.1f'|format(overall.resnet_f1 * 100) }}% của ResNet50). Sự khác biệt này cho thấy CNN có khả năng cân bằng tốt hơn giữa Precision và Recall, đặc biệt trong các lớp như "Bacterial Pneumonia" và "Viral Pneumonia", nơi CNN thể hiện hiệu suất vượt trội. Cụ thể:</p>
+                                <ul class="detailed-reasons">
+                                    <li>Trong lớp "Bacterial Pneumonia", CNN có Precision cao hơn (74.9% so với 72.3% của ResNet50) và Recall tốt hơn (81.6% so với 76.4%), dẫn đến F1-score cao hơn rõ rệt (78.1% so với 74.3%). Điều này cho thấy CNN hiệu quả hơn trong việc phát hiện và phân loại chính xác các trường hợp viêm phổi do vi khuẩn.</li>
+                                    <li>Đối với "Viral Pneumonia", CNN cũng vượt trội với Precision (75.5% so với 70.4%) và F1-score (71.5% so với 68.8%), mặc dù Recall của hai mô hình khá tương đồng.</li>
+                                    <li>Chỉ số AUC của CNN (97.8%) cao hơn ResNet50 (97.1%), cho thấy CNN có khả năng phân biệt tốt hơn giữa các lớp, đặc biệt trong các trường hợp phức tạp như "Corona Virus Disease" (AUC 99.7% so với 99.3% của ResNet50).</li>
+                                    <li>Chênh lệch F1-score tổng quát (+1.7%) chứng minh rằng CNN phù hợp hơn với tập dữ liệu hiện tại, đặc biệt nếu mục tiêu là tối ưu hóa cả Precision và Recall trên các lớp bệnh lý đa dạng.</li>
+                                </ul>
+                                <p>Kết luận, CNN là mô hình đề xuất vì nó cung cấp hiệu suất tổng quát tốt hơn, đặc biệt trong việc xử lý các lớp bệnh lý khó và duy trì độ chính xác cao trên toàn bộ tập dữ liệu.</p>
+
                                 {% else %}
                                 <p><strong>Mô hình đề xuất:</strong> Cả hai (CNN hoặc ResNet50)</p>
-                                <p><strong>Lý do:</strong> Cả hai mô hình có hiệu suất tổng quát tương đương (F1: {{
-                                    '%0.1f'|format(overall.cnn_f1 * 100) }}%), nên có thể chọn dựa trên yêu cầu cụ thể (ví dụ: ưu tiên Precision hay Recall).</p>
+                                <p><strong>Lý do:</strong> Cả hai mô hình có hiệu suất tổng quát tương đương (F1: {{ '%0.1f'|format(overall.cnn_f1 * 100) }}%), cho thấy không có sự khác biệt rõ rệt giữa CNN và ResNet50. Cụ thể:</p>
+                                <ul class="detailed-reasons">
+                                    <li>Trong các lớp như "Normal" và "Tuberculosis", cả hai mô hình có hiệu suất rất gần nhau, với sự chênh lệch F1-score nhỏ (dưới 0.4%). Điều này cho thấy cả hai đều xử lý tốt các trường hợp đơn giản hoặc rõ ràng.</li>
+                                    <li>Đối với các lớp phức tạp hơn như "Bacterial Pneumonia" và "Viral Pneumonia", CNN có xu hướng tốt hơn về Precision và Recall, trong khi ResNet50 lại ổn định hơn ở các lớp như "Corona Virus Disease".</li>
+                                    <li>Chỉ số AUC tổng quát (CNN: 97.8%, ResNet50: 97.1%) và chênh lệch nhỏ (-0.7%) cho thấy cả hai mô hình đều có khả năng phân biệt tốt, nhưng không có mô hình nào vượt trội rõ rệt.</li>
+                                    <li>Vì vậy, lựa chọn giữa CNN và ResNet50 nên dựa trên yêu cầu cụ thể: nếu ưu tiên Precision cao (ít sai sót khi dự đoán dương tính), CNN là lựa chọn tốt hơn; nếu ưu tiên Recall cao (phát hiện tối đa các trường hợp bệnh), ResNet50 có thể phù hợp hơn.</li>
+                                </ul>
+                                <p>Kết luận, cả hai mô hình đều có thể được sử dụng, nhưng cần cân nhắc thêm các yếu tố như tài nguyên tính toán, thời gian đào tạo, hoặc yêu cầu cụ thể của ứng dụng.</p>
                                 {% endif %}
                             </div>
                         </div>
