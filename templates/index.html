@@ -62,7 +62,8 @@
                     </label>
                     <!-- Thêm input cho URL -->
                     <div class="url-input-container" style="margin-bottom: 15px;">
-                        <input type="url" id="url-input" name="url" class="form-control" autocomplete="off" placeholder="Nhập URL ảnh (ví dụ: https://example.com/image.jpg)">
+                        <input type="url" id="url-input" name="url" class="form-control" autocomplete="off"
+                            placeholder="Nhập URL ảnh (ví dụ: https://example.com/image.jpg)">
                     </div>
                     <!-- Input chọn file (Xóa required) -->
                     <input type="file" id="file-upload" name="file" accept="image/*" class="form-control d-none">
@@ -79,7 +80,7 @@
                     </select>
                 </div>
             </div>
-            <div class="button-container mt-3">
+            <div class="mt-3">
                 <button type="submit" class="btn btn-grad">Chuẩn đoán</button>
             </div>
         </form>
@@ -91,14 +92,22 @@
                 <div class="result-content">
                     <p id="result-text" class="result-text"></p>
                 </div>
+                <div class="alert alert-warning mt-4">
+                    <i class="fas fa-info-circle me-2" style="color: #9bff00;"></i>
+                    <strong>Lưu ý:</strong> Kết quả phân tích này được cung cấp như một công cụ hỗ trợ cho các chuyên
+                    gia y tế và
+                    không nên thay thế cho đánh giá lâm sàng chuyên nghiệp. Luôn tham khảo ý kiến của các chuyên gia y
+                    tế để có chẩn đoán và điều trị đầy đủ.
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Error -->
-        <div id="error" style="display: none;" class="result">
-            <h2>Lỗi</h2>
-            <p id="error-message"></p>
-        </div>
+    <!-- Error -->
+    <div id="error" style="display: none;" class="result">
+        <h2>Lỗi</h2>
+        <p id="error-message"></p>
+    </div>
     </div>
 
     <!-- Scroll to Top Button -->
