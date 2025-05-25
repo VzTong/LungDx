@@ -1,26 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lung Diagnosis</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+{% block title %}Trang chủ{% endblock %}
 
-<body class="dark-mode">
-    <!-- Loading Screen -->
-    <div id="loading">
-        <div class="loader"></div>
-        <p>Đang tải...</p>
-    </div>
-
+{% block content %}
+<main class="container">
     <!-- Analyzing Overlay -->
     <div id="analyzing-overlay" style="display: none;">
         <div class="analyzing-content">
-            <p id="analyzing-text">Đang chuẩn đoán... <span id="percentage">0%</span></p>
+            <p id="status-message">Bắt đầu phân tích...</p>
+            <p id="percentage">0%</p>
             <div class="progress-bar">
                 <div class="progress" id="progress"></div>
             </div>
@@ -28,27 +16,6 @@
             <button id="cancel-button" class="btn btn-danger mt-3">Hủy</button>
         </div>
     </div>
-
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="/">Lung Diagnosis</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/history">Lịch sử chuẩn đoán</a>
-                    </li>
-                    <li class="nav-item">
-                        <button id="theme-toggle" class="btn nav-link"><i class="fas fa-moon"></i></button>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
 
     <div class="container mt-5 pt-5">
         <h1 class="mb-4">Lung Diagnosis</h1>
@@ -60,12 +27,12 @@
                     <label class="form-label">
                         <h3>Chọn ảnh X-quang hoặc nhập URL</h3>
                     </label>
-                    <!-- Thêm input cho URL -->
+                    <!-- Input cho URL -->
                     <div class="url-input-container" style="margin-bottom: 15px;">
                         <input type="url" id="url-input" name="url" class="form-control" autocomplete="off"
                             placeholder="Nhập URL ảnh (ví dụ: https://example.com/image.jpg)">
                     </div>
-                    <!-- Input chọn file (Xóa required) -->
+                    <!-- Input chọn file -->
                     <input type="file" id="file-upload" name="file" accept="image/*" class="form-control d-none">
                     <div id="file-placeholder"><small><i>Kéo thả ảnh hoặc nhấp để chọn file</i></small></div>
                     <img id="preview-image" src="" alt="Ảnh xem trước" style="display: none;">
@@ -86,7 +53,7 @@
         </form>
 
         <!-- Result -->
-        <div id="result" class="result">
+        <div id="result" class="result" style="display: none;">
             <div class="result-card">
                 <h2 class="result-header"><i class="fas fa-stethoscope"></i> Kết quả phân tích</h2>
                 <div class="result-content">
@@ -95,57 +62,17 @@
                 <div class="alert alert-warning mt-4">
                     <i class="fas fa-info-circle me-2" style="color: #9bff00;"></i>
                     <strong>Lưu ý:</strong> Kết quả phân tích này được cung cấp như một công cụ hỗ trợ cho các chuyên
-                    gia y tế và
-                    không nên thay thế cho đánh giá lâm sàng chuyên nghiệp. Luôn tham khảo ý kiến của các chuyên gia y
-                    tế để có chẩn đoán và điều trị đầy đủ.
+                    gia y tế và không nên thay thế cho đánh giá lâm sàng chuyên nghiệp. Luôn tham khảo ý kiến của các
+                    chuyên gia y tế để có chẩn đoán và điều trị đầy đủ.
                 </div>
             </div>
         </div>
+
+        <!-- Error -->
+        <div id="error" style="display: none;" class="alert alert-danger mt-4">
+            <h2>Lỗi</h2>
+            <p id="error-message"></p>
+        </div>
     </div>
-
-    <!-- Error -->
-    <div id="error" style="display: none;" class="result">
-        <h2>Lỗi</h2>
-        <p id="error-message"></p>
-    </div>
-    </div>
-
-    <!-- Scroll to Top Button -->
-    <button id="scroll-to-top" title="Cuộn lên đầu">
-        <i class="fas fa-chevron-up"></i>
-    </button>
-
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.css">
-
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-
-    <script>
-        $(document).ready(function () {
-            $('.image-popup').magnificPopup({
-                type: 'image',
-                closeOnContentClick: true,
-                closeBtnInside: false,
-                fixedContentPos: true,
-                mainClass: 'mfp-no-margins mfp-with-zoom',
-                gallery: {
-                    enabled: true,
-                    navigateByImgClick: true,
-                    preload: [0, 1]
-                },
-                image: {
-                    verticalFit: true
-                },
-                zoom: {
-                    enabled: true,
-                    duration: 300
-                }
-            });
-        });
-    </script>
-</body>
-
-</html>
+</main>
+{% endblock %}
