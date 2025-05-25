@@ -179,6 +179,7 @@ body {
     justify-content: center;
     align-items: center;
     z-index: 999;
+    transition: opacity 0.5s ease; /* Thêm hiệu ứng opacity */
 }
 
 .analyzing-content {
@@ -213,7 +214,7 @@ body {
     width: 0;
     height: 100%;
     border-radius: 10px;
-    transition: width 0.3s ease-in-out;
+    transition: width 0.4s ease-in-out; /* Tăng thời gian transition */
     position: relative;
     overflow: hidden;
     background: var(--progress-bg);
@@ -626,7 +627,6 @@ body {
     border: 1px solid var(--card-border);
 }
 
-/* Tùy chỉnh table-dark */
 .table-dark {
     --bs-table-bg: transparent;
     --bs-table-color: var(--text-color);
@@ -1034,21 +1034,6 @@ body {
         font-size: 0.8em;
     }
 
-    #preview-image {
-        max-height: 200px;
-    }
-
-    #scroll-to-top {
-        bottom: 15px;
-        right: 15px;
-        width: 40px;
-        height: 40px;
-    }
-
-    #analyzing-text {
-        font-size: 1em;
-    }
-
     .progress-bar {
         width: 180px;
     }
@@ -1066,9 +1051,49 @@ body {
     }
 }
 
-/* Icon Font Awesome */
 .fas {
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
     color: var(--text-color);
+}
+
+.analyzing-content {
+    max-width: 400px;
+    width: 90%;
+    background: var(--card-bg);
+}
+
+#status-message {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+#percentage {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .analyzing-content {
+        padding: 20px;
+    }
+    #status-message {
+        font-size: 1.1em;
+    }
+    #percentage {
+        font-size: 1.3em;
+    }
+}
+
+@media (max-width: 480px) {
+    .analyzing-content {
+        padding: 15px;
+    }
+    #status-message {
+        font-size: 1em;
+    }
+    #percentage {
+        font-size: 1.2em;
+    }
 }
