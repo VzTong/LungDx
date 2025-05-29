@@ -26,7 +26,7 @@
     </div>
 
     <!-- Danh sách các mục lịch sử -->
-    <section id="history-entries">
+    <section id="history-entries" class="row justify-content-around">
         {% if history %}
         {% set grouped_entries = {} %}
         <!-- Nhóm các mục lịch sử dựa trên ảnh và kết quả -->
@@ -42,7 +42,7 @@
         {% for key, entries in grouped_entries.items() %}
         {% set first_entry = entries[0] %}
         {% set index = loop.index0 %}
-        <div class="card history-entry mb-3">
+        <div class="card history-entry mb-3 col" style= "width: 48.6666667%; flex: 0 0 auto;">
             <div class="card-header d-flex justify-content-between">
                 <!-- Thêm data-timestamp để hỗ trợ bộ lọc ngày tháng -->
                 <h3 data-timestamp="{{ first_entry.timestamp }}">Phân tích lúc: {{ first_entry.timestamp.split(' ')[0]
