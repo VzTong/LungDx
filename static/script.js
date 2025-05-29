@@ -1,10 +1,12 @@
 const ThemeToggle = {
   init() {
+    // Tìm nút chuyển đổi giao diện (theme toggle)
     const toggleButton = document.getElementById("theme-toggle");
     if (!toggleButton) {
       console.error("Theme toggle button not found");
       return;
     }
+    // Lấy giao diện hiện tại từ localStorage, mặc định là dark
     const currentTheme = localStorage.getItem("theme") || "dark";
     document.body.classList.toggle("light-mode", currentTheme === "light");
     toggleButton.innerHTML =
@@ -12,6 +14,7 @@ const ThemeToggle = {
         ? '<i class="fas fa-sun"></i>'
         : '<i class="fas fa-moon"></i>';
 
+    // Xử lý sự kiện nhấp để chuyển đổi giao diện
     toggleButton.addEventListener("click", () => {
       document.body.classList.toggle("light-mode");
       const newTheme = document.body.classList.contains("light-mode")
@@ -28,6 +31,7 @@ const ThemeToggle = {
 
 const FileUpload = {
   init() {
+    // Tìm các phần tử giao diện liên quan đến tải file
     const dropZone = document.getElementById("drop-zone");
     const fileInput = document.getElementById("file-upload");
     const urlInput = document.getElementById("url-input");
@@ -47,6 +51,7 @@ const FileUpload = {
       return;
     }
 
+    // Xử lý kéo thả file
     dropZone.addEventListener("dragover", (e) => {
       e.preventDefault();
       dropZone.classList.add("dragover");
@@ -66,14 +71,17 @@ const FileUpload = {
       }
     });
 
+    // Cho phép nhấp vào drop zone để mở file input
     dropZone.addEventListener("click", () => fileInput.click());
 
+    // Xử lý khi chọn file
     fileInput.addEventListener("change", () => {
       if (fileInput.files.length > 0) {
         FileUpload.previewFile(fileInput.files[0]);
       }
     });
 
+    // Xử lý khi nhập URL
     urlInput.addEventListener("input", () => {
       if (urlInput.value) {
         fileNameDisplay.textContent = urlInput.value.split("/").pop();
@@ -90,6 +98,7 @@ const FileUpload = {
   },
 
   previewFile(file) {
+    // Hiển thị bản xem trước của file được chọn
     const fileNameDisplay = document.getElementById("file-name");
     const previewImage = document.getElementById("preview-image");
     const filePlaceholder = document.getElementById("file-placeholder");
@@ -105,6 +114,7 @@ const FileUpload = {
   },
 
   reset() {
+    // Đặt lại giao diện tải file
     const fileInput = document.getElementById("file-upload");
     const urlInput = document.getElementById("url-input");
     const fileNameDisplay = document.getElementById("file-name");
@@ -129,6 +139,7 @@ const Analysis = {
   progressInterval: null,
 
   init() {
+    // Tìm các phần tử giao diện liên quan đến phân tích
     const form = document.getElementById("upload-form");
     const overlay = document.getElementById("analyzing-overlay");
     const progressBar = document.getElementById("progress");
@@ -148,41 +159,49 @@ const Analysis = {
       return;
     }
 
+    // Kết nối SocketIO
     Analysis.socket = io();
 
+    // Xử lý tiến trình phân tích
     Analysis.socket.on("progress", (data) => {
       console.log("Progress update:", data);
       const targetProgress = data.percentage;
 
-      // Làm mượt tiến trình
+      // Làm mượt thanh tiến trình
       clearInterval(Analysis.progressInterval);
       Analysis.progressInterval = setInterval(() => {
         if (Analysis.currentProgress < targetProgress) {
-          Analysis.currentProgress = Math.min(Analysis.currentProgress + 1, targetProgress);
+          Analysis.currentProgress = Math.min(
+            Analysis.currentProgress + 1,
+            targetProgress
+          );
           progressBar.style.width = `${Analysis.currentProgress}%`;
-          percentageText.textContent = `${Math.round(Analysis.currentProgress)}%`;
+          percentageText.textContent = `${Math.round(
+            Analysis.currentProgress
+          )}%`;
           statusMessage.textContent = "Đang xử lý...";
         } else {
           clearInterval(Analysis.progressInterval);
         }
-      }, 20); // Cập nhật mỗi 20ms
+      }, 20);
 
-      // Xử lý khi đạt 100%
+      // Ẩn overlay khi hoàn tất
       if (data.percentage >= 100) {
         setTimeout(() => {
-          overlay.style.opacity = '0';
+          overlay.style.opacity = "0";
           setTimeout(() => {
-            overlay.style.display = 'none';
-            overlay.style.opacity = '1';
+            overlay.style.display = "none";
+            overlay.style.opacity = "1";
             Analysis.currentProgress = 0;
-            progressBar.style.width = '0%';
-            percentageText.textContent = '0%';
-            statusMessage.textContent = '';
-          }, 500); // Chờ 500ms để hoàn tất hiệu ứng ẩn
-        }, 500); // Giữ 500ms sau khi đạt 100%
+            progressBar.style.width = "0%";
+            percentageText.textContent = "0%";
+            statusMessage.textContent = "";
+          }, 500);
+        }, 500);
       }
     });
 
+    // Xử lý kết quả phân tích
     Analysis.socket.on("result", (data) => {
       console.log("Analysis result:", data);
       Analysis.isAnalyzing = false;
@@ -195,6 +214,7 @@ const Analysis = {
       }
     });
 
+    // Xử lý lỗi phân tích
     Analysis.socket.on("error", (data) => {
       console.log("Analysis error:", data);
       Analysis.isAnalyzing = false;
@@ -202,16 +222,19 @@ const Analysis = {
       Analysis.showError(data.message);
     });
 
+    // Khởi tạo giao diện
     overlay.style.display = "none";
     progressBar.style.width = "0%";
     percentageText.textContent = "0%";
     statusMessage.textContent = "";
 
+    // Xử lý submit form phân tích
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       Analysis.handleSubmit();
     });
 
+    // Xử lý hủy phân tích
     cancelButton.addEventListener("click", () => {
       Analysis.isAnalyzing = false;
       Analysis.resetUI();
@@ -219,6 +242,7 @@ const Analysis = {
       Analysis.socket.emit("cancel");
     });
 
+    // Kiểm tra trạng thái mô hình
     console.log("Checking model status...");
     fetch("/model_status")
       .then((response) => response.json())
@@ -244,11 +268,13 @@ const Analysis = {
   },
 
   handleSubmit() {
+    // Ngăn gửi nhiều yêu cầu phân tích cùng lúc
     if (Analysis.isAnalyzing) {
       console.log("Analysis already in progress");
       return;
     }
 
+    // Tìm các phần tử form
     const fileInput = document.getElementById("file-upload");
     const urlInput = document.getElementById("url-input");
     const modelSelect = document.getElementById("model-select");
@@ -259,11 +285,13 @@ const Analysis = {
       return;
     }
 
+    // Kiểm tra xem có file hoặc URL hay không
     if (!fileInput.files.length && !urlInput.value) {
       Analysis.showError("Vui lòng chọn file hoặc nhập URL");
       return;
     }
 
+    // Hiển thị overlay phân tích
     Analysis.isAnalyzing = true;
     const overlay = document.getElementById("analyzing-overlay");
     const progressBar = document.getElementById("progress");
@@ -275,6 +303,7 @@ const Analysis = {
     percentageText.textContent = "0%";
     statusMessage.textContent = "Bắt đầu phân tích...";
 
+    // Gửi yêu cầu phân tích
     const formData = new FormData();
     formData.append("model", modelSelect.value);
     formData.append("sid", Analysis.socket.id);
@@ -301,6 +330,7 @@ const Analysis = {
   },
 
   showResult(data) {
+    // Hiển thị kết quả phân tích
     const resultSection = document.getElementById("result");
     const resultText = document.getElementById("result-text");
     const errorSection = document.getElementById("error");
@@ -331,6 +361,7 @@ const Analysis = {
   },
 
   showError(message) {
+    // Hiển thị thông báo lỗi
     const errorSection = document.getElementById("error");
     const errorMessage = document.getElementById("error-message");
 
@@ -346,6 +377,7 @@ const Analysis = {
   },
 
   resetUI() {
+    // Đặt lại giao diện phân tích
     const overlay = document.getElementById("analyzing-overlay");
     const progressBar = document.getElementById("progress");
     const percentageText = document.getElementById("percentage");
@@ -366,16 +398,19 @@ const HistoryPage = {
   currentPage: 1,
 
   init() {
+    // Tìm container chứa các mục lịch sử
     const historyEntries = document.getElementById("history-entries");
     if (!historyEntries) {
       console.error("History entries element missing");
       return;
     }
 
+    // Khởi tạo danh sách lịch sử, phân trang, và bộ lọc
     HistoryPage.loadEntries();
     HistoryPage.setupPagination();
     HistoryPage.setupFilters();
 
+    // Khởi tạo Magnific Popup cho ảnh
     if (typeof $.fn.magnificPopup !== "undefined") {
       $(".image-popup").magnificPopup({
         type: "image",
@@ -385,17 +420,48 @@ const HistoryPage = {
       console.warn("Magnific Popup not loaded");
     }
 
+    // Xử lý sự kiện xóa mục lịch sử
     historyEntries.addEventListener("click", (e) => {
       if (e.target.classList.contains("delete-entry")) {
         const entryId = e.target.getAttribute("data-id");
         if (confirm("Bạn có chắc chắn muốn xóa lịch sử này?")) {
+          // Gửi yêu cầu xóa tới server
           fetch(`/delete_history/${entryId}`, {
             method: "DELETE",
           })
             .then((response) => response.json())
             .then((data) => {
               if (data.message) {
-                HistoryPage.loadEntries();
+                // Làm mới danh sách lịch sử từ server
+                fetch("/history")
+                  .then((response) => response.text())
+                  .then((html) => {
+                    // Cập nhật nội dung history-entries với HTML mới
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, "text/html");
+                    const newHistoryEntries =
+                      doc.getElementById("history-entries");
+                    if (newHistoryEntries) {
+                      historyEntries.innerHTML = newHistoryEntries.innerHTML;
+                      // Đặt lại trang hiện tại và làm mới giao diện
+                      HistoryPage.currentPage = 1;
+                      HistoryPage.loadEntries();
+                      HistoryPage.setupPagination(); // Đảm bảo phân trang được thiết lập lại
+                      // Khởi tạo lại Magnific Popup cho các ảnh mới
+                      if (typeof $.fn.magnificPopup !== "undefined") {
+                        $(".image-popup").magnificPopup({
+                          type: "image",
+                          gallery: { enabled: true },
+                        });
+                      }
+                    }
+                  })
+                  .catch((error) => {
+                    console.error("Error refreshing history:", error);
+                    alert(
+                      "Lỗi khi làm mới danh sách lịch sử: " + error.message
+                    );
+                  });
               } else {
                 alert(data.error || "Lỗi khi xóa lịch sử");
               }
@@ -407,6 +473,7 @@ const HistoryPage = {
       }
     });
 
+    // Xử lý sự kiện hiển thị/ẩn chi tiết (nếu có)
     historyEntries.addEventListener("click", (e) => {
       if (e.target.classList.contains("toggle-details")) {
         const entryId = e.target.getAttribute("data-id");
@@ -420,6 +487,7 @@ const HistoryPage = {
   },
 
   loadEntries() {
+    // Tìm các phần tử bộ lọc và danh sách lịch sử
     const historyEntries = document.getElementById("history-entries");
     const dateFilter = document.getElementById("date-filter");
     const modelFilter = document.getElementById("model-filter");
@@ -429,36 +497,60 @@ const HistoryPage = {
       return;
     }
 
+    // Lấy danh sách các mục lịch sử
     let entries = Array.from(historyEntries.children).filter((child) =>
       child.classList.contains("history-entry")
     );
     const dateValue = dateFilter.value;
     const modelValue = modelFilter.value;
 
+    // Lọc các mục lịch sử
     entries.forEach((entry) => {
-      const timestamp = entry
-        .querySelector(".card-header h3")
-        .textContent.split(" ")[2];
-      const modelNames = Array.from(entry.querySelectorAll(".model-name")).map(
-        (el) => el.textContent
+      // Lấy timestamp từ thuộc tính data-timestamp
+      const timestampElement = entry.querySelector(".card-header h3");
+      const timestamp = timestampElement
+        ? timestampElement.getAttribute("data-timestamp")
+        : "";
+      const dateFromTimestamp = timestamp ? timestamp.split(" ")[0] : "";
+
+      // Lấy danh sách mô hình từ các phần tử .model-name
+      const modelElements = entry.querySelectorAll(".model-name");
+      const modelNames = Array.from(modelElements).map((el) =>
+        el.textContent.trim()
       );
+
       let matchesDate = true;
       let matchesModel = true;
 
-      if (dateValue) {
-        matchesDate = timestamp === dateValue;
-      }
-      if (modelValue !== "all") {
-        matchesModel = modelNames.includes(modelValue);
+      // Lọc theo ngày
+      if (dateValue && dateFromTimestamp) {
+        matchesDate = dateFromTimestamp === dateValue;
       }
 
+      // Lọc theo mô hình
+      if (modelValue !== "all") {
+        matchesModel = modelNames.some((name) => {
+          // Chuẩn hóa tên mô hình để so sánh
+          const normalizedModelValue = modelValue
+            .replace(/[^a-zA-Z0-9]/g, "")
+            .toLowerCase();
+          const normalizedModelName = name
+            .replace(/[^a-zA-Z0-9]/g, "")
+            .toLowerCase();
+          return normalizedModelName.includes(normalizedModelValue);
+        });
+      }
+
+      // Hiển thị hoặc ẩn mục lịch sử
       entry.style.display = matchesDate && matchesModel ? "" : "none";
     });
 
+    // Cập nhật phân trang
     HistoryPage.updatePagination(entries);
   },
 
   setupPagination() {
+    // Thiết lập sự kiện cho phân trang
     const pagination = document.getElementById("pagination");
     if (!pagination) {
       console.error("Pagination element missing");
@@ -476,6 +568,7 @@ const HistoryPage = {
   },
 
   updatePagination(entries) {
+    // Cập nhật giao diện phân trang
     const pagination = document.getElementById("pagination");
     if (!pagination) return;
 
@@ -485,12 +578,13 @@ const HistoryPage = {
 
     if (totalPages <= 1) {
       pagination.innerHTML = "";
-      entries.forEach((entry, index) => {
+      entries.forEach((entry) => {
         entry.style.display = "";
       });
       return;
     }
 
+    // Tạo nút "Trước"
     html += `<li class="page-item ${
       HistoryPage.currentPage === 1 ? "disabled" : ""
     }">
@@ -499,6 +593,7 @@ const HistoryPage = {
                     }">«</a>
                  </li>`;
 
+    // Tạo các nút trang
     for (let i = 1; i <= totalPages; i++) {
       html += `<li class="page-item ${
         HistoryPage.currentPage === i ? "active" : ""
@@ -507,6 +602,7 @@ const HistoryPage = {
                      </li>`;
     }
 
+    // Tạo nút "Sau"
     html += `<li class="page-item ${
       HistoryPage.currentPage === totalPages ? "disabled" : ""
     }">
@@ -517,6 +613,7 @@ const HistoryPage = {
 
     pagination.innerHTML = html;
 
+    // Hiển thị các mục trong trang hiện tại
     entries.forEach((entry, index) => {
       const start = (HistoryPage.currentPage - 1) * HistoryPage.entriesPerPage;
       const end = start + HistoryPage.entriesPerPage;
@@ -525,6 +622,7 @@ const HistoryPage = {
   },
 
   setupFilters() {
+    // Thiết lập sự kiện cho bộ lọc
     const dateFilter = document.getElementById("date-filter");
     const modelFilter = document.getElementById("model-filter");
 
@@ -547,6 +645,7 @@ const HistoryPage = {
 
 const ScrollToTop = {
   init() {
+    // Thiết lập nút cuộn lên đầu
     const button = document.getElementById("scroll-to-top");
     if (!button) {
       console.error("Scroll to top button missing");
@@ -565,6 +664,7 @@ const ScrollToTop = {
 
 const LoadingScreen = {
   init() {
+    // Thiết lập màn hình tải
     const loadingDiv = document.getElementById("loading");
     if (!loadingDiv) {
       console.error("Loading screen element missing");
@@ -593,6 +693,7 @@ const LoadingScreen = {
   },
 };
 
+// Khởi tạo tất cả các module khi tải trang
 document.addEventListener("DOMContentLoaded", () => {
   ThemeToggle.init();
   FileUpload.init();
