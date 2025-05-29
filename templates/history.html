@@ -3,29 +3,33 @@
 {% block title %}Lịch sử chuẩn đoán{% endblock %}
 
 {% block content %}
+<!-- Tiêu đề trang lịch sử -->
 <main class="container mt-5 pt-5">
     <h1 class="text-center mb-4">Lịch sử chuẩn đoán</h1>
 
-    <!-- Bộ lọc -->
-    <div class="row mb-4">
+    <!-- Bộ lọc ngày và mô hình -->
+    <div class="row mb-3">
         <div class="col-md-6">
-            <label for="date-filter" class="form-label">Lọc theo ngày:</label>
+            <label for="date-filter">Lọc theo ngày:</label>
             <input type="date" id="date-filter" class="form-control">
         </div>
         <div class="col-md-6">
-            <label for="model-filter" class="form-label">Lọc theo mô hình:</label>
-            <select id="model-filter" class="form-select">
+            <label for="model-filter">Lọc theo mô hình:</label>
+            <select id="model-filter" class="form-control">
                 <option value="all">Tất cả</option>
+                <!-- Lặp qua các mô hình từ MODELS_INFO trong app.py -->
                 {% for model_name, info in models.items() %}
-                <option value="{{ model_name }}">{{ model_name }}</option>
+                <option value="{{ model_name }}">{{ info.name }}</option>
                 {% endfor %}
             </select>
         </div>
     </div>
 
+    <!-- Danh sách các mục lịch sử -->
     <section id="history-entries">
         {% if history %}
         {% set grouped_entries = {} %}
+        <!-- Nhóm các mục lịch sử dựa trên ảnh và kết quả -->
         {% for entry in history %}
         {% set key = (entry.source_url or entry.original_image) ~ '|' ~ entry.result %}
         {% if key not in grouped_entries %}
@@ -34,22 +38,29 @@
         {% set _ = grouped_entries[key].append(entry) %}
         {% endfor %}
 
+        <!-- Hiển thị từng nhóm lịch sử trong card -->
         {% for key, entries in grouped_entries.items() %}
         {% set first_entry = entries[0] %}
         {% set index = loop.index0 %}
-        <div class="history-entry card mb-3" data-id="{{ index }}">
+        <div class="card history-entry mb-3">
             <div class="card-header d-flex justify-content-between">
-                <h3>Phân tích lúc: {{ first_entry.timestamp.split(' ')[0] }}</h3>
-                <button class="btn btn-danger delete-entry" data-id="{{ index }}">Xóa</button>
+                <!-- Thêm data-timestamp để hỗ trợ bộ lọc ngày tháng -->
+                <h3 data-timestamp="{{ first_entry.timestamp }}">Phân tích lúc: {{ first_entry.timestamp.split(' ')[0]
+                    }}
+                </h3>
+                <!-- Nút xóa mục lịch sử -->
+                <button class="btn btn-danger btn-sm float-right delete-entry" data-id="{{ index }}">Xóa</button>
             </div>
-            <div class="card-body">
+            <div class="card-body row">
                 <table class="history-table mt-3">
+                    <!-- Hiển thị kết quả bằng tiếng Việt và tiếng Anh -->
                     <tr>
                         <th>Kết quả</th>
                         <td>
                             <div
                                 class="result-display {{ 'result-healthy' if 'Normal' in first_entry.result else 'result-disease' }}">
-                                <span class="result-label">{{ first_entry.result }}</span>
+                                <span class="result-label">{{ first_entry.result_vn }} - ({{ first_entry.result
+                                    }})</span>
                             </div>
                         </td>
                     </tr>
@@ -58,6 +69,7 @@
                         <th>Thời gian và mô hình</th>
                         <td>
                             <ul class="timestamp-list">
+                                <!-- Lặp qua các lần phân tích trong nhóm -->
                                 {% for entry in entries %}
                                 <li>
                                     {% set model_name_map = {
@@ -66,7 +78,7 @@
                                     'lung_resnet50_v1': 'Mô hình ResNet50',
                                     'lung_efficientnetb0_v1': 'Mô hình EfficientNetB0'
                                     } %}
-                                    <span class="model-name">{{ model_name_map.get(entry.model, entry.model) }}</span>
+                                    <span class="model-name">{{ entry.model }}</span>
                                     - ({{ entry.timestamp }})
                                 </li>
                                 {% endfor %}
@@ -78,10 +90,11 @@
                         <th>Ảnh đầu vào</th>
                         <td>
                             {% if first_entry.original_image %}
+                            <!-- Hiển thị ảnh với hỗ trợ phóng to -->
                             <div class="image-container">
                                 <a href="{{ first_entry.original_image }}" class="image-popup">
                                     <img src="{{ first_entry.original_image }}" alt="Ảnh đầu vào"
-                                        class="history-image img-fluid" loading="lazy">
+                                        class="history-image img-fluid" loading="lazy" style="max-width: 100px;">
                                 </a>
                             </div>
                             {% else %}
@@ -90,13 +103,17 @@
                         </td>
                     </tr>
                 </table>
+
             </div>
         </div>
         {% endfor %}
         {% else %}
-        <p class="text-center">Không có dữ liệu lịch sử phân tích.</p>
+        <!-- Thông báo khi không có dữ liệu -->
+        <p>Không có dữ liệu lịch sử phân tích.</p>
         {% endif %}
     </section>
+
+    <!-- Phân trang -->
     <nav aria-label="Page navigation">
         <ul id="pagination" class="pagination justify-content-center"></ul>
     </nav>
