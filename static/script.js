@@ -1,26 +1,32 @@
+/* Module ThemeToggle: Quản lý chuyển đổi giao diện sáng/tối */
 const ThemeToggle = {
   init() {
-    // Tìm nút chuyển đổi giao diện (theme toggle)
+    // Lấy nút chuyển đổi theme
     const toggleButton = document.getElementById("theme-toggle");
     if (!toggleButton) {
       console.error("Theme toggle button not found");
       return;
     }
-    // Lấy giao diện hiện tại từ localStorage, mặc định là dark
+    // Kiểm tra theme hiện tại từ localStorage, mặc định là "dark"
     const currentTheme = localStorage.getItem("theme") || "dark";
+    // Áp dụng theme sáng nếu currentTheme là "light"
     document.body.classList.toggle("light-mode", currentTheme === "light");
+    // Cập nhật biểu tượng nút (mặt trời cho sáng, mặt trăng cho tối)
     toggleButton.innerHTML =
       currentTheme === "light"
         ? '<i class="fas fa-sun"></i>'
         : '<i class="fas fa-moon"></i>';
 
-    // Xử lý sự kiện nhấp để chuyển đổi giao diện
+    // Thêm sự kiện click để chuyển đổi theme
     toggleButton.addEventListener("click", () => {
+      // Chuyển đổi class light-mode trên body
       document.body.classList.toggle("light-mode");
+      // Xác định theme mới và lưu vào localStorage
       const newTheme = document.body.classList.contains("light-mode")
         ? "light"
         : "dark";
       localStorage.setItem("theme", newTheme);
+      // Cập nhật biểu tượng nút
       toggleButton.innerHTML =
         newTheme === "light"
           ? '<i class="fas fa-sun"></i>'
@@ -29,9 +35,10 @@ const ThemeToggle = {
   },
 };
 
+/* Module FileUpload: Quản lý tải lên file ảnh và nhập URL */
 const FileUpload = {
   init() {
-    // Tìm các phần tử giao diện liên quan đến tải file
+    // Lấy các phần tử DOM liên quan đến upload
     const dropZone = document.getElementById("drop-zone");
     const fileInput = document.getElementById("file-upload");
     const urlInput = document.getElementById("url-input");
@@ -39,6 +46,7 @@ const FileUpload = {
     const previewImage = document.getElementById("preview-image");
     const filePlaceholder = document.getElementById("file-placeholder");
 
+    // Kiểm tra xem các phần tử có tồn tại không
     if (
       !dropZone ||
       !fileInput ||
@@ -51,44 +59,59 @@ const FileUpload = {
       return;
     }
 
-    // Xử lý kéo thả file
+    // Xử lý sự kiện dragover để highlight vùng thả file
     dropZone.addEventListener("dragover", (e) => {
       e.preventDefault();
       dropZone.classList.add("dragover");
     });
 
+    // Xóa highlight khi rời vùng thả
     dropZone.addEventListener("dragleave", () => {
       dropZone.classList.remove("dragover");
     });
 
+    // Xử lý thả file vào dropZone
     dropZone.addEventListener("drop", (e) => {
       e.preventDefault();
       dropZone.classList.remove("dragover");
       const files = e.dataTransfer.files;
       if (files.length > 0) {
-        fileInput.files = files;
-        FileUpload.previewFile(files[0]);
+        fileInput.files = files; // Gán file vào input
+        FileUpload.previewFile(files[0]); // Xem trước file
       }
     });
 
-    // Cho phép nhấp vào drop zone để mở file input
-    dropZone.addEventListener("click", () => fileInput.click());
+    // Xử lý click vào dropZone để mở hộp thoại chọn file
+    dropZone.addEventListener("click", (e) => {
+      // Ngăn mở hộp thoại nếu click vào urlInput
+      if (e.target === urlInput || urlInput.contains(e.target)) {
+        return; // Thoát sớm để urlInput hoạt động bình thường
+      }
+      fileInput.click(); // Mở hộp thoại chọn file
+    });
 
-    // Xử lý khi chọn file
+    // Ngăn sự kiện click từ urlInput lan truyền lên dropZone
+    urlInput.addEventListener("click", (e) => {
+      e.stopPropagation(); // Ngăn bubbling để không kích hoạt fileInput
+    });
+
+    // Xử lý khi chọn file qua input
     fileInput.addEventListener("change", () => {
       if (fileInput.files.length > 0) {
-        FileUpload.previewFile(fileInput.files[0]);
+        FileUpload.previewFile(fileInput.files[0]); // Xem trước file
       }
     });
 
-    // Xử lý khi nhập URL
+    // Xử lý nhập URL để xem trước ảnh
     urlInput.addEventListener("input", () => {
       if (urlInput.value) {
+        // Hiển thị tên file từ URL và xem trước ảnh
         fileNameDisplay.textContent = urlInput.value.split("/").pop();
         previewImage.src = urlInput.value;
         previewImage.style.display = "block";
         filePlaceholder.style.display = "none";
       } else {
+        // Reset khi xóa URL
         fileNameDisplay.textContent = "";
         previewImage.style.display = "none";
         previewImage.src = "";
@@ -97,30 +120,32 @@ const FileUpload = {
     });
   },
 
+  // Hàm xem trước file ảnh
   previewFile(file) {
-    // Hiển thị bản xem trước của file được chọn
     const fileNameDisplay = document.getElementById("file-name");
     const previewImage = document.getElementById("preview-image");
     const filePlaceholder = document.getElementById("file-placeholder");
 
-    fileNameDisplay.textContent = file.name;
+    fileNameDisplay.textContent = file.name; // Hiển thị tên file
     const reader = new FileReader();
     reader.onload = (e) => {
+      // Hiển thị ảnh xem trước
       previewImage.src = e.target.result;
       previewImage.style.display = "block";
       filePlaceholder.style.display = "none";
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(file); // Đọc file thành data URL
   },
 
+  // Reset giao diện upload
   reset() {
-    // Đặt lại giao diện tải file
     const fileInput = document.getElementById("file-upload");
     const urlInput = document.getElementById("url-input");
     const fileNameDisplay = document.getElementById("file-name");
     const previewImage = document.getElementById("preview-image");
     const filePlaceholder = document.getElementById("file-placeholder");
 
+    // Xóa dữ liệu input và giao diện
     if (fileInput) fileInput.value = "";
     if (urlInput) urlInput.value = "";
     if (fileNameDisplay) fileNameDisplay.textContent = "";
@@ -132,14 +157,15 @@ const FileUpload = {
   },
 };
 
+/* Module Analysis: Quản lý quá trình phân tích ảnh X-quang */
 const Analysis = {
-  isAnalyzing: false,
-  socket: null,
-  currentProgress: 0,
-  progressInterval: null,
+  isAnalyzing: false, // Trạng thái phân tích
+  socket: null, // SocketIO instance
+  currentProgress: 0, // Tiến trình hiện tại
+  progressInterval: null, // Interval để làm mượt thanh tiến trình
 
   init() {
-    // Tìm các phần tử giao diện liên quan đến phân tích
+    // Lấy các phần tử DOM
     const form = document.getElementById("upload-form");
     const overlay = document.getElementById("analyzing-overlay");
     const progressBar = document.getElementById("progress");
@@ -159,10 +185,10 @@ const Analysis = {
       return;
     }
 
-    // Kết nối SocketIO
+    // Khởi tạo SocketIO
     Analysis.socket = io();
 
-    // Xử lý tiến trình phân tích
+    // Xử lý cập nhật tiến trình từ server
     Analysis.socket.on("progress", (data) => {
       console.log("Progress update:", data);
       const targetProgress = data.percentage;
@@ -171,33 +197,29 @@ const Analysis = {
       clearInterval(Analysis.progressInterval);
       Analysis.progressInterval = setInterval(() => {
         if (Analysis.currentProgress < targetProgress) {
-          Analysis.currentProgress = Math.min(
-            Analysis.currentProgress + 1,
-            targetProgress
-          );
+          Analysis.currentProgress = Math.min(Analysis.currentProgress + 1, targetProgress);
           progressBar.style.width = `${Analysis.currentProgress}%`;
-          percentageText.textContent = `${Math.round(
-            Analysis.currentProgress
-          )}%`;
+          percentageText.textContent = `${Math.round(Analysis.currentProgress)}%`;
           statusMessage.textContent = "Đang xử lý...";
         } else {
           clearInterval(Analysis.progressInterval);
         }
-      }, 20);
+      }, 20); // Cập nhật mỗi 20ms
 
-      // Ẩn overlay khi hoàn tất
+      // Xử lý khi đạt 100%
       if (data.percentage >= 100) {
         setTimeout(() => {
-          overlay.style.opacity = "0";
+          overlay.style.opacity = '0'; // Mờ dần overlay
           setTimeout(() => {
-            overlay.style.display = "none";
-            overlay.style.opacity = "1";
+            // Ẩn overlay và reset UI
+            overlay.style.display = 'none';
+            overlay.style.opacity = '1';
             Analysis.currentProgress = 0;
-            progressBar.style.width = "0%";
-            percentageText.textContent = "0%";
-            statusMessage.textContent = "";
-          }, 500);
-        }, 500);
+            progressBar.style.width = '0%';
+            percentageText.textContent = '0%';
+            statusMessage.textContent = '';
+          }, 500); // Chờ hiệu ứng mờ
+        }, 500); // Giữ 500ms sau 100%
       }
     });
 
@@ -207,14 +229,14 @@ const Analysis = {
       Analysis.isAnalyzing = false;
       overlay.style.display = "none";
       if (data.status === "success") {
-        Analysis.showResult(data);
-        FileUpload.reset();
+        Analysis.showResult(data); // Hiển thị kết quả
+        FileUpload.reset(); // Reset giao diện upload
       } else {
-        Analysis.showError(data.error);
+        Analysis.showError(data.error); // Hiển thị lỗi
       }
     });
 
-    // Xử lý lỗi phân tích
+    // Xử lý lỗi từ server
     Analysis.socket.on("error", (data) => {
       console.log("Analysis error:", data);
       Analysis.isAnalyzing = false;
@@ -228,18 +250,18 @@ const Analysis = {
     percentageText.textContent = "0%";
     statusMessage.textContent = "";
 
-    // Xử lý submit form phân tích
+    // Xử lý submit form
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       Analysis.handleSubmit();
     });
 
-    // Xử lý hủy phân tích
+    // Xử lý nút hủy
     cancelButton.addEventListener("click", () => {
       Analysis.isAnalyzing = false;
       Analysis.resetUI();
       Analysis.showError("Phân tích đã bị hủy");
-      Analysis.socket.emit("cancel");
+      Analysis.socket.emit("cancel"); // Gửi yêu cầu hủy đến server
     });
 
     // Kiểm tra trạng thái mô hình
@@ -251,6 +273,7 @@ const Analysis = {
         if (data.error) {
           Analysis.showError("Lỗi tải mô hình: " + data.error);
         } else {
+          // Vô hiệu hóa mô hình không khả dụng
           Object.keys(data).forEach((model) => {
             if (!data[model]) {
               const option = document.querySelector(
@@ -267,6 +290,7 @@ const Analysis = {
       });
   },
 
+  // Xử lý submit form phân tích
   handleSubmit() {
     // Ngăn gửi nhiều yêu cầu phân tích cùng lúc
     if (Analysis.isAnalyzing) {
@@ -297,13 +321,14 @@ const Analysis = {
     const progressBar = document.getElementById("progress");
     const percentageText = document.getElementById("percentage");
     const statusMessage = document.getElementById("status-message");
+    // Hiển thị overlay phân tích
     overlay.style.display = "flex";
     overlay.style.opacity = "1";
     progressBar.style.width = "0%";
     percentageText.textContent = "0%";
     statusMessage.textContent = "Bắt đầu phân tích...";
 
-    // Gửi yêu cầu phân tích
+    // Tạo form data để gửi lên server
     const formData = new FormData();
     formData.append("model", modelSelect.value);
     formData.append("sid", Analysis.socket.id);
@@ -315,6 +340,7 @@ const Analysis = {
       file: fileInput.files[0]?.name,
       url: urlInput.value,
     });
+    // Gửi yêu cầu phân tích
     fetch("/analyze", {
       method: "POST",
       body: formData,
@@ -329,8 +355,8 @@ const Analysis = {
     });
   },
 
+  // Hiển thị kết quả phân tích
   showResult(data) {
-    // Hiển thị kết quả phân tích
     const resultSection = document.getElementById("result");
     const resultText = document.getElementById("result-text");
     const errorSection = document.getElementById("error");
@@ -340,6 +366,7 @@ const Analysis = {
       return;
     }
 
+    // Xử lý cảnh báo cho viêm phổi
     let warning = "";
     if (data.warning) {
       warning = `<p style="color: orange;"><em>${data.warning}</em></p>`;
@@ -351,6 +378,7 @@ const Analysis = {
         '<p style="color: orange;"><em>Lưu ý: Dự đoán cho Viêm phổi do vi khuẩn hoặc virus có thể không chính xác do hạn chế của mô hình.</em></p>';
     }
 
+    // Hiển thị kết quả và ảnh
     resultText.innerHTML = `
         <strong>Kết quả:</strong> ${data.result_vn} (${data.result})<br>
         ${warning}
@@ -360,8 +388,8 @@ const Analysis = {
     errorSection.style.display = "none";
   },
 
+  // Hiển thị thông báo lỗi
   showError(message) {
-    // Hiển thị thông báo lỗi
     const errorSection = document.getElementById("error");
     const errorMessage = document.getElementById("error-message");
 
@@ -376,8 +404,8 @@ const Analysis = {
     if (resultSection) resultSection.style.display = "none";
   },
 
+  // Reset giao diện phân tích
   resetUI() {
-    // Đặt lại giao diện phân tích
     const overlay = document.getElementById("analyzing-overlay");
     const progressBar = document.getElementById("progress");
     const percentageText = document.getElementById("percentage");
@@ -393,22 +421,24 @@ const Analysis = {
   },
 };
 
+/* Module HistoryPage: Quản lý hiển thị lịch sử phân tích */
 const HistoryPage = {
-  entriesPerPage: 5,
-  currentPage: 1,
+  entriesPerPage: 4, // Số mục hiển thị mỗi trang
+  currentPage: 1, // Trang hiện tại
+  isLoading: false, // Trạng thái để ngăn vòng lặp tải
 
   init() {
-    // Tìm container chứa các mục lịch sử
+    // Lấy container lịch sử
     const historyEntries = document.getElementById("history-entries");
     if (!historyEntries) {
       console.error("History entries element missing");
       return;
     }
 
-    // Khởi tạo danh sách lịch sử, phân trang, và bộ lọc
+    // Tải danh sách lịch sử
     HistoryPage.loadEntries();
-    HistoryPage.setupPagination();
-    HistoryPage.setupFilters();
+    HistoryPage.setupPagination(); // Thiết lập phân trang
+    HistoryPage.setupFilters(); // Thiết lập bộ lọc
 
     // Khởi tạo Magnific Popup cho ảnh
     if (typeof $.fn.magnificPopup !== "undefined") {
@@ -420,48 +450,18 @@ const HistoryPage = {
       console.warn("Magnific Popup not loaded");
     }
 
-    // Xử lý sự kiện xóa mục lịch sử
+    // Xử lý xóa mục lịch sử
     historyEntries.addEventListener("click", (e) => {
       if (e.target.classList.contains("delete-entry")) {
         const entryId = e.target.getAttribute("data-id");
         if (confirm("Bạn có chắc chắn muốn xóa lịch sử này?")) {
-          // Gửi yêu cầu xóa tới server
           fetch(`/delete_history/${entryId}`, {
             method: "DELETE",
           })
             .then((response) => response.json())
             .then((data) => {
               if (data.message) {
-                // Làm mới danh sách lịch sử từ server
-                fetch("/history")
-                  .then((response) => response.text())
-                  .then((html) => {
-                    // Cập nhật nội dung history-entries với HTML mới
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, "text/html");
-                    const newHistoryEntries =
-                      doc.getElementById("history-entries");
-                    if (newHistoryEntries) {
-                      historyEntries.innerHTML = newHistoryEntries.innerHTML;
-                      // Đặt lại trang hiện tại và làm mới giao diện
-                      HistoryPage.currentPage = 1;
-                      HistoryPage.loadEntries();
-                      HistoryPage.setupPagination(); // Đảm bảo phân trang được thiết lập lại
-                      // Khởi tạo lại Magnific Popup cho các ảnh mới
-                      if (typeof $.fn.magnificPopup !== "undefined") {
-                        $(".image-popup").magnificPopup({
-                          type: "image",
-                          gallery: { enabled: true },
-                        });
-                      }
-                    }
-                  })
-                  .catch((error) => {
-                    console.error("Error refreshing history:", error);
-                    alert(
-                      "Lỗi khi làm mới danh sách lịch sử: " + error.message
-                    );
-                  });
+                HistoryPage.loadEntries(); // Tải lại lịch sử sau khi xóa
               } else {
                 alert(data.error || "Lỗi khi xóa lịch sử");
               }
@@ -473,7 +473,7 @@ const HistoryPage = {
       }
     });
 
-    // Xử lý sự kiện hiển thị/ẩn chi tiết (nếu có)
+    // Xử lý hiển thị/ẩn chi tiết lịch sử
     historyEntries.addEventListener("click", (e) => {
       if (e.target.classList.contains("toggle-details")) {
         const entryId = e.target.getAttribute("data-id");
@@ -486,14 +486,23 @@ const HistoryPage = {
     });
   },
 
+  // Tải và hiển thị danh sách lịch sử
   loadEntries() {
-    // Tìm các phần tử bộ lọc và danh sách lịch sử
+    // Ngăn gọi lại nếu đang tải
+    if (HistoryPage.isLoading) {
+      console.log("LoadEntries already in progress, skipping...");
+      return;
+    }
+    HistoryPage.isLoading = true;
+
     const historyEntries = document.getElementById("history-entries");
     const dateFilter = document.getElementById("date-filter");
     const modelFilter = document.getElementById("model-filter");
 
+    // Kiểm tra các phần tử DOM cần thiết
     if (!historyEntries || !dateFilter || !modelFilter) {
       console.error("History filter elements missing");
+      HistoryPage.isLoading = false;
       return;
     }
 
@@ -501,56 +510,82 @@ const HistoryPage = {
     let entries = Array.from(historyEntries.children).filter((child) =>
       child.classList.contains("history-entry")
     );
-    const dateValue = dateFilter.value;
-    const modelValue = modelFilter.value;
 
-    // Lọc các mục lịch sử
+    // Sắp xếp lịch sử theo thời gian giảm dần (mới nhất trên cùng) dựa trên data-timestamp
+    entries.sort((a, b) => {
+      try {
+        const timestampA = a.querySelector(".card-header h3").getAttribute("data-timestamp") || "1970-01-01 00:00:00";
+        const timestampB = b.querySelector(".card-header h3").getAttribute("data-timestamp") || "1970-01-01 00:00:00";
+        console.log(`Sorting: ${timestampA} vs ${timestampB}`); // Debug timestamp
+        return new Date(timestampB).getTime() - new Date(timestampA).getTime(); // So sánh giảm dần
+      } catch (e) {
+        console.error("Error sorting timestamps:", e);
+        return 0; // Giữ nguyên nếu lỗi
+      }
+    });
+
+    // Cập nhật thứ tự DOM mà không xóa sự kiện
+    const fragment = document.createDocumentFragment();
+    entries.forEach(entry => fragment.appendChild(entry));
+    historyEntries.appendChild(fragment);
+
+    // Áp dụng bộ lọc ngày và mô hình
+    const dateValue = dateFilter.value; // Giá trị dạng YYYY-MM-DD
+    const modelValue = modelFilter.value; // Giá trị mô hình hoặc "all"
+
     entries.forEach((entry) => {
-      // Lấy timestamp từ thuộc tính data-timestamp
-      const timestampElement = entry.querySelector(".card-header h3");
-      const timestamp = timestampElement
-        ? timestampElement.getAttribute("data-timestamp")
-        : "";
-      const dateFromTimestamp = timestamp ? timestamp.split(" ")[0] : "";
+      // Lấy timestamp đầy đủ từ data-timestamp
+      const fullTimestamp = entry.querySelector(".card-header h3").getAttribute("data-timestamp") || "";
+      // Chỉ lấy phần ngày (YYYY-MM-DD) để so sánh với dateFilter
+      const timestampDate = fullTimestamp ? fullTimestamp.split(" ")[0] : "";
 
-      // Lấy danh sách mô hình từ các phần tử .model-name
-      const modelElements = entry.querySelectorAll(".model-name");
-      const modelNames = Array.from(modelElements).map((el) =>
-        el.textContent.trim()
+      // Lấy danh sách mô hình từ .model-name
+      const modelNames = Array.from(entry.querySelectorAll(".model-name")).map(
+        (el) => el.textContent.trim() // Loại bỏ khoảng trắng thừa
       );
 
       let matchesDate = true;
       let matchesModel = true;
 
-      // Lọc theo ngày
-      if (dateValue && dateFromTimestamp) {
-        matchesDate = dateFromTimestamp === dateValue;
+      // So sánh ngày từ timestamp với dateFilter
+      if (dateValue) {
+        matchesDate = timestampDate === dateValue;
       }
 
-      // Lọc theo mô hình
+      // So sánh mô hình với modelFilter
       if (modelValue !== "all") {
-        matchesModel = modelNames.some((name) => {
-          // Chuẩn hóa tên mô hình để so sánh
-          const normalizedModelValue = modelValue
-            .replace(/[^a-zA-Z0-9]/g, "")
-            .toLowerCase();
-          const normalizedModelName = name
-            .replace(/[^a-zA-Z0-9]/g, "")
-            .toLowerCase();
-          return normalizedModelName.includes(normalizedModelValue);
-        });
+        matchesModel = modelNames.includes(modelValue);
       }
 
-      // Hiển thị hoặc ẩn mục lịch sử
-      entry.style.display = matchesDate && matchesModel ? "" : "none";
+      // Hiển thị/ẩn mục dựa trên bộ lọc
+      entry.style.display = matchesDate && matchesModel ? "block" : "none";
     });
+
+    // Kiểm tra nếu không có mục nào hiển thị sau khi lọc
+    const visibleEntries = entries.filter(entry => entry.style.display === "block");
+    const noResultsMessage = document.getElementById("no-filter-results");
+    if (visibleEntries.length === 0 && (dateValue || modelValue !== "all")) {
+      if (!noResultsMessage) {
+        const message = document.createElement("p");
+        message.id = "no-filter-results";
+        message.textContent = "Không tìm thấy kết quả phù hợp.";
+        historyEntries.appendChild(message);
+      }
+    } else {
+      if (noResultsMessage) {
+        noResultsMessage.remove();
+      }
+    }
 
     // Cập nhật phân trang
     HistoryPage.updatePagination(entries);
+
+    // Kết thúc tải
+    HistoryPage.isLoading = false;
   },
 
+  // Thiết lập sự kiện cho phân trang
   setupPagination() {
-    // Thiết lập sự kiện cho phân trang
     const pagination = document.getElementById("pagination");
     if (!pagination) {
       console.error("Pagination element missing");
@@ -562,24 +597,26 @@ const HistoryPage = {
         e.preventDefault();
         const page = parseInt(e.target.getAttribute("data-page"));
         HistoryPage.currentPage = page;
-        HistoryPage.loadEntries();
+        HistoryPage.loadEntries(); // Tải lại lịch sử cho trang mới
       }
     });
   },
 
+  // Cập nhật giao diện phân trang
   updatePagination(entries) {
-    // Cập nhật giao diện phân trang
     const pagination = document.getElementById("pagination");
     if (!pagination) return;
 
-    entries = entries.filter((entry) => entry.style.display !== "none");
+    // Lọc các mục hiển thị
+    entries = entries.filter((entry) => entry.style.display === "block");
     const totalPages = Math.ceil(entries.length / HistoryPage.entriesPerPage);
     let html = "";
 
+    // Nếu chỉ có 1 trang, xóa phân trang
     if (totalPages <= 1) {
       pagination.innerHTML = "";
       entries.forEach((entry) => {
-        entry.style.display = "";
+        entry.style.display = "block";
       });
       return;
     }
@@ -617,10 +654,11 @@ const HistoryPage = {
     entries.forEach((entry, index) => {
       const start = (HistoryPage.currentPage - 1) * HistoryPage.entriesPerPage;
       const end = start + HistoryPage.entriesPerPage;
-      entry.style.display = index >= start && index < end ? "" : "none";
+      entry.style.display = index >= start && index < end ? "block" : "none";
     });
   },
 
+  // Thiết lập bộ lọc ngày và mô hình
   setupFilters() {
     // Thiết lập sự kiện cho bộ lọc
     const dateFilter = document.getElementById("date-filter");
@@ -631,18 +669,29 @@ const HistoryPage = {
       return;
     }
 
+    // Ngăn vòng lặp bằng cách kiểm tra thay đổi giá trị
+    let lastDateValue = dateFilter.value;
+    let lastModelValue = modelFilter.value;
+
     dateFilter.addEventListener("change", () => {
-      HistoryPage.currentPage = 1;
-      HistoryPage.loadEntries();
+      if (dateFilter.value !== lastDateValue) {
+        lastDateValue = dateFilter.value;
+        HistoryPage.currentPage = 1;
+        HistoryPage.loadEntries();
+      }
     });
 
     modelFilter.addEventListener("change", () => {
-      HistoryPage.currentPage = 1;
-      HistoryPage.loadEntries();
+      if (modelFilter.value !== lastModelValue) {
+        lastModelValue = modelFilter.value;
+        HistoryPage.currentPage = 1;
+        HistoryPage.loadEntries();
+      }
     });
   },
 };
 
+/* Module ScrollToTop: Nút cuộn lên đầu trang */
 const ScrollToTop = {
   init() {
     // Thiết lập nút cuộn lên đầu
@@ -652,16 +701,19 @@ const ScrollToTop = {
       return;
     }
 
+    // Hiển thị/ẩn nút dựa trên vị trí cuộn
     window.addEventListener("scroll", () => {
       button.style.display = window.scrollY > 200 ? "block" : "none";
     });
 
+    // Cuộn mượt lên đầu khi click
     button.addEventListener("click", () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
   },
 };
 
+/* Module LoadingScreen: Màn hình loading khi tải trang */
 const LoadingScreen = {
   init() {
     // Thiết lập màn hình tải
@@ -673,6 +725,7 @@ const LoadingScreen = {
 
     loadingDiv.style.display = "flex";
 
+    // Ẩn màn hình loading sau khi trang tải xong
     window.addEventListener("load", () => {
       setTimeout(() => {
         loadingDiv.style.opacity = "0";
@@ -682,6 +735,7 @@ const LoadingScreen = {
       }, 1000);
     });
 
+    // Ẩn sau 5s nếu trang không tải xong
     setTimeout(() => {
       if (loadingDiv.style.display === "flex") {
         loadingDiv.style.opacity = "0";
@@ -693,7 +747,7 @@ const LoadingScreen = {
   },
 };
 
-// Khởi tạo tất cả các module khi tải trang
+// Khởi tạo các module khi DOM sẵn sàng
 document.addEventListener("DOMContentLoaded", () => {
   ThemeToggle.init();
   FileUpload.init();
