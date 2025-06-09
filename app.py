@@ -73,10 +73,10 @@ MODEL_PATHS = {
 }
 
 MODELS_INFO = {
-    'lung_cnn_v0': {'name': 'CNN tùy chỉnh', 'description': 'Mô hình CNN tự xây dựng'},
     'lung_resnet50_v1': {'name': 'ResNet50', 'description': 'Mô hình ResNet50'},
     'lung_mobilenetv2_v1': {'name': 'MobileNetV2', 'description': 'Mô hình MobileNetV2'},
-    'lung_efficientnetb0_v1': {'name': 'EfficientNetB0', 'description': 'Mô hình EfficientNetB0'}
+    'lung_efficientnetb0_v1': {'name': 'EfficientNetB0', 'description': 'Mô hình EfficientNetB0'},
+    'lung_cnn_v0': {'name': 'CNN tùy chỉnh', 'description': 'Mô hình CNN tự xây dựng'}
 }
 
 CLASSES = ['Normal', 'Bacterial Pneumonia', 'Corona Virus Disease', 'Tuberculosis', 'Viral Pneumonia']
