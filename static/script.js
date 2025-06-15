@@ -703,7 +703,7 @@ const ScrollToTop = {
 
     // Hiển thị/ẩn nút dựa trên vị trí cuộn
     window.addEventListener("scroll", () => {
-      button.style.display = window.scrollY > 200 ? "block" : "none";
+        window.scrollY > 50 ? button.classList.add("show") : button.classList.remove("show");
     });
 
     // Cuộn mượt lên đầu khi click
