@@ -855,8 +855,8 @@ body {
 /* Scroll to Top Button */
 #scroll-to-top {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
+    bottom: 20px;
+    right: 20px;
     background: var(--scroll-top-bg);
     color: var(--text-color);
     border: none;
@@ -881,6 +881,7 @@ body {
 #scroll-to-top.show {
     opacity: 1;
     visibility: visible;
+    display: block !important;
 }
 
 /* Responsive Adjustments */
@@ -973,6 +974,12 @@ body {
     .result-text {
         font-size: 1.1em;
     }
+
+    #scroll-to-top {
+        bottom: 15px;
+        right: 15px;
+        padding: 8px; /* Kích thước nhỏ hơn cho mobile */
+    }
 }
 
 @media (max-width: 480px) {
@@ -1000,8 +1007,12 @@ body {
     }
 
     .history-entry {
-        margin-bottom: 15px;
+        /* margin-bottom: 15px; */
+        margin-inline-start: 1.5rem;
+        margin-inline-end: 1.5rem;
         padding: 0;
+        height: 25rem;
+        width: 22rem !important;
     }
 
     .history-table th,
@@ -1048,6 +1059,12 @@ body {
 
     .metrics-list li {
         font-size: 0.9em;
+    }
+
+    #scroll-to-top {
+        bottom: 10px;
+        right: 10px;
+        padding: 4px; /* Kích thước nhỏ hơn cho mobile */
     }
 }
 
