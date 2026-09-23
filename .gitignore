@@ -1,0 +1,79 @@
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env
+
+# ========================
+# Project specific
+# ========================
+# Model files (large binary files)
+model/
+*.keras
+*.h5
+*.pb
+saved_model/
+
+# Runtime data
+history.json
+history.json.backup
+app.log
+*.log
+
+# Uploaded images
+static/Uploads/
+static/uploads/
+
+# ========================
+# IDE & OS
+# ========================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# Jupyter
+# ========================
+.ipynb_checkpoints/
+
+# ========================
+# Secrets
+# ========================
+.env
+.env.local
+*.pem
+secrets.json
+config.local.py
