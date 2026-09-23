@@ -28,7 +28,7 @@
 
 # English
 
-> ⚠️ **Disclaimer**  
+> ⚠️ **Disclaimer**
 > This application is a **decision-support tool only**. Results must **not** replace professional clinical diagnosis. Always consult qualified medical experts.
 
 ## Features
@@ -204,7 +204,7 @@ Also ensure the following are **never committed** (already covered by `.gitignor
 
 ## Author
 
-**VzTong**  
+**VzTong**
 GitHub: [https://github.com/VzTong](https://github.com/VzTong)
 
 ## License
@@ -215,7 +215,7 @@ This project is licensed under the **MIT License** – see the [LICENSE](LICENSE
 
 # Tiếng Việt
 
-> ⚠️ **Tuyên bố miễn trừ**  
+> ⚠️ **Tuyên bố miễn trừ**
 > Ứng dụng này chỉ là **công cụ hỗ trợ quyết định**. Kết quả **không thay thế** chẩn đoán lâm sàng chuyên nghiệp. Luôn tham khảo ý kiến của các chuyên gia y tế có trình độ.
 
 ## Tính năng
@@ -391,7 +391,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
 
 ## Tác giả
 
-**VzTong**  
+**VzTong**
 GitHub: [https://github.com/VzTong](https://github.com/VzTong)
 
 ## Giấy phép
